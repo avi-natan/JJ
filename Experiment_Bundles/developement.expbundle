@@ -1,0 +1,64 @@
+;; Experiment bundle settings
+;;
+;; This file provides input settings
+;; for running an experimental bundle.
+;;
+;; Settings description:
+;;
+;; board_sizes: array, filled with different
+;; touples of (height,width), i.e., (y,x) of 
+;; boards to try
+;;
+;; plan_lengths: array, filled with
+;; different minimum lengths of plans to try
+;; * minimum, because somtimes paths conflict
+;;   each other and cannot be same lengths
+;;
+;; agent_nums: array, filled with
+;; different numbers of agents to try
+;;
+;; faulty_agent_nums: array, filled with
+;; different numbers of faulty agents to try
+;;
+;; speed_variations: array, filled with
+;; different speed variations for the
+;; faulty agents to try
+;;
+;; speed_variation_types: array the size of 1
+;; up to 3, filled with the values 'both',
+;; 'faster', 'slower'.
+;;
+;; conflict_delay_times: array, filled with
+;; different delay times for agent when
+;; they conflict each other
+;;
+;; repeats_number: number, determins how many
+;; repeats of each setting to run
+;;
+;;
+;; the product of the lengths of the arrays and
+;; of the repeats number determines the number 
+;; of the instances in the experiment bundle.
+;; for example, for:
+;; board_sizes:[[12,12]]
+;; plan_lengths:[6,10]
+;; agent_nums:[6,7]
+;; faulty_agent_nums:[2,3]
+;; speed_variations:[1,2]
+;; speed_variation_types:['slower','both']
+;; conflict_delay_times:[1,2,3]
+;; repeats_number:10
+;; the total number of instances will be:
+;; 1 x 2 x 2 x 2 x 2 x 2 x 3 x 10 = 960
+;;
+;; Important: the maximum number of in the
+;; array of the faulty agents cannot exceed
+;; the minimum number of the total agents
+board_sizes:[[12,12]]
+plan_lengths:[7]
+agent_nums:[3]
+faulty_agent_nums:[2]
+speed_variations:[2]
+speed_variation_types:['faster']
+conflict_delay_times:[1]
+repeats_number:1
