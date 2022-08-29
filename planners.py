@@ -82,7 +82,7 @@ def plan_single(board_size, board_temporal_constraints, a, start, goal):
     return plan
 
 
-def create_naiive_plan(board_size, plan_length, agents_number):
+def create_naiive_plans(board_size, plan_length, agents_number):
     # create temporal board slices - i.e., for every plan step create a board image
     board_temporal_constraints = [[[-1 for _y in range(board_size[0])] for _x in range(board_size[1])] for _pl in range(plan_length*2)]
 

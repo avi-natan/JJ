@@ -25,13 +25,16 @@ def runPaperExperiment():
     pass
 
 def runExperimentBundle(filename):
+    # read parameters from file
     board_sizes, plan_lengths, agent_nums, faulty_agents_nums, speed_variations, speed_variation_types, \
         conflict_delay_times, repeats_number = read_experiment_bundle(filename)
+
+    # create instances
     for bs in board_sizes:
         for pl in plan_lengths:
             for an in agent_nums:
-                plan = planners.create_naiive_plan(bs, pl, an)
-                visualizer.visualize(bs[0], bs[1], plan, orientation='console')
+                plans = planners.create_naiive_plans(bs, pl, an)
+                visualizer.visualize(bs[0], bs[1], plans, orientation='console')
                 print(9)
 
 
