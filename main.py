@@ -22,7 +22,7 @@ def read_experiment_bundle(filename):
     conflict_delay_times = ast.literal_eval(lines[7][:-1].split(sep=':')[1])
     repeats_number = int(lines[8][:-1].split(sep=':')[1])
     return board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, speed_variations, \
-           speed_variation_types, conflict_delay_times, repeats_number
+        speed_variation_types, conflict_delay_times, repeats_number
 
 
 def runPaperExperiment():

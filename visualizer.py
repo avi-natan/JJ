@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
-import json
 
 const_colors = {
     0: [0, 1, 0],
@@ -76,4 +75,3 @@ def visualize(height, width, plans, mode='grid', orientation='console'):
                   head_width=0.5, head_length=0.5, zorder=3 + ai % len(a_matrix))
 
     plt.show()
-    # plt.savefig('books_read.png')
