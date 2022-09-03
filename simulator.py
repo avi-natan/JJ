@@ -48,7 +48,7 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
         e.append([plans[i][0][0], plans[i][0][1]])
 
     # initialize empty timespace
-    timespace = [[[] for _ in range(board_size[0])] for _ in range(max(list(map(lambda l: len(l), plans))))]
+    timespace = [[[-1 for _ in range(board_size[1])] for _ in range(board_size[0])] for _ in range(max(list(map(lambda l: len(l), plans))))]
 
     print(9)
 

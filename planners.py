@@ -49,7 +49,7 @@ def advance_one_step(board_size, board_temporal_constraints, step, agent, goal, 
 
     # make sure that the temporal board is not long enough, add some steps
     if step == len(board_temporal_constraints)-1:
-        board_temporal_constraints.append([[-1 for _x in range(board_size[0])] for _y in range(board_size[1])])
+        board_temporal_constraints.append([[-1 for _x in range(board_size[1])] for _y in range(board_size[0])])
     
     # choose the position with the smallest distance, that is not occupied, and that is not hot swapping
     # TODO: need to consider also staying in place, because staying in place might not be possible in the next time step (maybe)
