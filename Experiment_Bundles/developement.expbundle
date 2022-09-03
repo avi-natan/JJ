@@ -20,6 +20,9 @@
 ;; faulty_agent_nums: array, filled with
 ;; different numbers of faulty agents to try
 ;;
+;; fault_probabilities: array, filled with
+;; different fault probabilities to try
+;;
 ;; speed_variations: array, filled with
 ;; different speed variations for the
 ;; faulty agents to try
@@ -44,12 +47,13 @@
 ;; plan_lengths:[6,10]
 ;; agent_nums:[6,7]
 ;; faulty_agent_nums:[2,3]
+;; fault_probabilities:[0.5]
 ;; speed_variations:[1,2]
 ;; speed_variation_types:['slower','both']
 ;; conflict_delay_times:[1,2,3]
 ;; repeats_number:10
 ;; the total number of instances will be:
-;; 1 x 2 x 2 x 2 x 2 x 2 x 3 x 10 = 960
+;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 3 x 10 = 960
 ;;
 ;; Important: the maximum number of in the
 ;; array of the faulty agents cannot exceed
@@ -58,7 +62,8 @@ board_sizes:[[12,12]]
 plan_lengths:[7]
 agent_nums:[3]
 faulty_agent_nums:[2]
+fault_probabilities:[0.5]
 speed_variations:[2]
-speed_variation_types:['faster']
+speed_variation_types:['both']
 conflict_delay_times:[1]
-repeats_number:1
+repeats_number:10

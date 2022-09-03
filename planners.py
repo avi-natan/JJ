@@ -52,9 +52,10 @@ def advance_one_step(board_size, board_temporal_constraints, step, agent, goal, 
         board_temporal_constraints.append([[-1 for _x in range(board_size[0])] for _y in range(board_size[1])])
     
     # choose the position with the smallest distance, that is not occupied, and that is not hot swapping
+    # TODO: need to consider also staying in place, because staying in place might not be possible in the next time step (maybe)
     for p in next_positions_with_distances:
         if (board_temporal_constraints[step][p[0][0]][p[0][1]] == -1 and board_temporal_constraints[step+1][p[0][0]][p[0][1]] == -1) or \
-                (board_temporal_constraints[step][p[0][0]][p[0][1]] != -1 and board_temporal_constraints[step+1][p[0][0]][p[0][1]] == -1 and board_temporal_constraints[step][p[0][0]][p[0][1]] != board_temporal_constraints[step+1][current_position[0][0]][current_position[0][1]]):
+                (board_temporal_constraints[step][p[0][0]][p[0][1]] != -1 and board_temporal_constraints[step+1][p[0][0]][p[0][1]] == -1 and board_temporal_constraints[step][p[0][0]][p[0][1]] != board_temporal_constraints[step+1][current_position[0]][current_position[1]]):
             next_position[0] = p[0][0]
             next_position[1] = p[0][1]
             board_temporal_constraints[step + 1][p[0][0]][p[0][1]] = agent
@@ -83,6 +84,7 @@ def plan_single(board_size, board_temporal_constraints, a, start, goal):
 
 
 def create_naiive_plans(board_size, plan_length, agents_number):
+    # TODO: in general need to fix this, since the plans are not sound
     # create temporal board slices - i.e., for every plan step create a board image
     board_temporal_constraints = [[[-1 for _y in range(board_size[0])] for _x in range(board_size[1])] for _pl in range(plan_length*2)]
 
