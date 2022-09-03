@@ -86,7 +86,7 @@ def plan_single(board_size, board_temporal_constraints, a, start, goal):
 def create_naiive_plans(board_size, plan_length, agents_number):
     # TODO: in general need to fix this, since the plans are not sound
     # create temporal board slices - i.e., for every plan step create a board image
-    board_temporal_constraints = [[[-1 for _y in range(board_size[0])] for _x in range(board_size[1])] for _pl in range(plan_length*2)]
+    board_temporal_constraints = [[[-1 for _x in range(board_size[1])] for _y in range(board_size[0])] for _pl in range(plan_length*2)]
 
     # initialize the plans
     plans = []

@@ -22,7 +22,7 @@ def get_pick_color(color_id):
 
 def visualize(height, width, plans, mode='grid', orientation='console'):
     a_matrix = plans
-    board = np.zeros((width, height))
+    board = np.zeros((height, width))
     # plt.figure()
     plt.figure(dpi=300)
     cmap = colors.ListedColormap(['white', 'black'])
@@ -31,16 +31,16 @@ def visualize(height, width, plans, mode='grid', orientation='console'):
     ax = plt.gca()
 
     # Major ticks
-    ax.set_xticks(np.arange(0, height, 1))
-    ax.set_yticks(np.arange(0, width, 1))
+    ax.set_xticks(np.arange(0, width, 1))
+    ax.set_yticks(np.arange(0, height, 1))
 
     # Labels for major ticks
-    ax.set_xticklabels(np.arange(0, height, 1))
-    ax.set_yticklabels(np.arange(0, width, 1))
+    ax.set_xticklabels(np.arange(0, width, 1))
+    ax.set_yticklabels(np.arange(0, height, 1))
 
     # Minor ticks
-    ax.set_xticks(np.arange(-.5, height, 1), minor=True)
-    ax.set_yticks(np.arange(-.5, width, 1), minor=True)
+    ax.set_xticks(np.arange(-.5, width, 1), minor=True)
+    ax.set_yticks(np.arange(-.5, height, 1), minor=True)
 
     # We change the fontsize of minor ticks label
     ax.tick_params(axis='both', which='major', labelsize=6)

@@ -66,7 +66,6 @@ def runExperimentBundle(filename):
                                                                                 total_instances)
                                         # advance instance number by 1
                                         instance_number += 1
-                                        print(9)
 
 
 if __name__ == '__main__':

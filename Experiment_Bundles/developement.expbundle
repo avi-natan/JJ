@@ -58,7 +58,7 @@
 ;; Important: the maximum number of in the
 ;; array of the faulty agents cannot exceed
 ;; the minimum number of the total agents
-board_sizes:[[12,12]]
+board_sizes:[[7,12]]
 plan_lengths:[7]
 agent_nums:[3]
 faulty_agent_nums:[2]
@@ -66,4 +66,4 @@ fault_probabilities:[0.5]
 speed_variations:[2]
 speed_variation_types:['both']
 conflict_delay_times:[1]
-repeats_number:10
+repeats_number:1
