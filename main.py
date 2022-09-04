@@ -32,12 +32,12 @@ def runPaperExperiment():
 def runExperimentBundle(filename):
     # read parameters from file
     board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, speed_variations, \
-        speed_variation_types, conflict_delay_times, repeats_number = read_experiment_bundle(filename)
+        speed_variation_types, interruption_delay_times, repeats_number = read_experiment_bundle(filename)
 
     # calculate the total number of instances and initiate instance number
     total_instances = len(board_sizes) * len(plan_lengths) * len(agent_nums) * len(faulty_agents_nums) \
-        * len(fault_probabilities) * len(speed_variations) * len(speed_variation_types) * len(conflict_delay_times) \
-        * repeats_number
+        * len(fault_probabilities) * len(speed_variations) * len(speed_variation_types) \
+        * len(interruption_delay_times) * repeats_number
     instance_number = 1
 
     # create instances
@@ -56,13 +56,11 @@ def runExperimentBundle(filename):
                     for fp in fault_probabilities:
                         for sv in speed_variations:
                             for svt in speed_variation_types:
-                                # generate a speed change table
-                                spdchgtab = simulator.generate_speed_change_table(plans, F, fp, sv, svt)
-                                for cdt in conflict_delay_times:
+                                for idt in interruption_delay_times:
                                     for rn in range(repeats_number):
                                         # execute the plans to get faulty excution
                                         execution = simulator.simulate_instance(bs, pl, an, plans, fan, F, fp, sv, svt,
-                                                                                spdchgtab, cdt, rn, instance_number,
+                                                                                idt, rn+1, instance_number,
                                                                                 total_instances)
                                         # advance instance number by 1
                                         instance_number += 1
