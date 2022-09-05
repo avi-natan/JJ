@@ -184,4 +184,4 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     print('execution:')
     helper.print_matrix(execution)
 
-    return execution
+    return execution, spdchgtab

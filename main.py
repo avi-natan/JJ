@@ -58,10 +58,10 @@ def runExperimentBundle(filename):
                             for svt in speed_variation_types:
                                 for idt in interruption_delay_times:
                                     for rn in range(repeats_number):
-                                        # execute the plans to get faulty excution
-                                        execution = simulator.simulate_instance(bs, pl, an, plans, fan, F, fp, sv, svt,
-                                                                                idt, rn+1, instance_number,
-                                                                                total_instances)
+                                        # execute the plans to get faulty excution and the speed change table
+                                        execution, spdchgtab = \
+                                            simulator.simulate_instance(bs, pl, an, plans, fan, F, fp, sv, svt, idt,
+                                                                        rn+1, instance_number, total_instances)
                                         # advance instance number by 1
                                         instance_number += 1
 
