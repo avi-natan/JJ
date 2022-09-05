@@ -42,8 +42,8 @@ def stuck(ptrs_curr, ptrs_prev, plans):
         for a in range(len(plans)):
             if ptrs_curr[a] < len(plans[a]) - 1:
                 wanted_position = [plans[a][ptrs_curr[a]+1][0], plans[a][ptrs_curr[a]+1][1]]
-                for plan in plans:
-                    if plan[-1] == wanted_position:
+                for p in range(len(plans)):
+                    if p != a and plans[p][-1] == wanted_position and ptrs_curr[p] == len(plans[p])-1:
                         return True
         return False
 
