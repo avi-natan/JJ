@@ -124,7 +124,8 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
             else:
                 yta1.append(a)
 
-        # for every agent in yta, calculate speed change and add it to spdchgtab
+        # for every agent in yta, calculate speed change and add it to spdchgtab.
+        # agents that just got out of a delay are excempt
         for a in yta1:
             if a in faulty_agents:
                 if random.uniform(0, 1) < fault_probability:
@@ -134,14 +135,20 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
                     speed_change = spchgs[0]
                     # depends on the speed change type, decide if its faster, slower, or random
                     if speed_variation_type == 'slower':
-                        spdchgtab[a].append(-speed_change)
-                        delays[a] = speed_change - 1
+                        if spdchgtab[a] != [] and spdchgtab[a][-1] not in [-1, -1j]:
+                            spdchgtab[a].append(-speed_change)
+                            delays[a] = speed_change - 1
+                        else:
+                            spdchgtab[a].append(0)
                     elif speed_variation_type == 'faster':
                         spdchgtab[a].append(speed_change)
                     else:  # speed_variation_type == 'both':
                         if random.uniform(0, 1) < 0.5:
-                            spdchgtab[a].append(-speed_change)
-                            delays[a] = speed_change - 1
+                            if spdchgtab[a] != [] and spdchgtab[a][-1] not in [-1, -1j]:
+                                spdchgtab[a].append(-speed_change)
+                                delays[a] = speed_change - 1
+                            else:
+                                spdchgtab[a].append(0)
                         else:
                             spdchgtab[a].append(speed_change)
                 else:
