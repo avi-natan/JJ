@@ -1,3 +1,4 @@
+import math
 from itertools import combinations
 
 import helper
@@ -102,6 +103,65 @@ def system_success(goal_delays_w, threshold):
     return True
 
 
+def equivalent_sets(param, param1):
+    for i in param:
+        if i not in param1:
+            return False
+    for i in param1:
+        if i not in param:
+            return False
+    return True
+
+
+def shapley_for_system(E, W):
+    """
+    The shapley value function for a group of players N characteristic function v is represented as:
+
+                      ____
+    Phi_i(v) =  _1_   \     |S|!*(n-|S|-1)![v(S u {i}) - v(S)]
+                 n!   /___
+                  S subseteq N\{i}
+
+    function parameters:
+    i - the player of N for which we calculate the shapley value
+    n - |N|
+
+    :param E: containing the values of v
+    :param W: contains the group N
+    :return:
+    """
+    # W = [1, 2, 3]
+    # E = subsets(W)
+    # V = [
+    #     [[], 0],
+    #     [[1], 80],
+    #     [[2], 56],
+    #     [[3], 70],
+    #     [[1, 2], 100],
+    #     [[1, 3], 85],
+    #     [[2, 3], 72],
+    #     [[1, 2, 3], 90]
+    # ]
+    Phi = []
+    for w in W:
+        N_minus_i = [item for item in E if w not in item[0]]
+        # N_minus_i = [item for item in E if w not in item]
+        total_sum = 0
+        for S in N_minus_i:
+            len_S = len(S)
+            v_S = max(S[1].values())
+            # v_S = [item for item in V if item[0] == S][0][1]
+            Sui = [item for item in E if equivalent_sets(S[0] + [w], item[0])][0]
+            # Sui = [item for item in E if equivalent_sets(S + [w], item)][0]
+            v_Sui = max(Sui[1].values())
+            # v_Sui = [item for item in V if item[0] == Sui][0][1]
+            sum_S = math.factorial(len_S) * math.factorial(len(W)-len_S-1) * (v_Sui - v_S)
+            total_sum += sum_S
+        Phi_w = total_sum / math.factorial(len(W))
+        Phi.append([w, Phi_w])
+    return Phi
+
+
 def diagnose(plans, execution, board_size, threshold):
     # logging
     print(f'######################## diagnosing ########################')
@@ -151,4 +211,6 @@ def diagnose(plans, execution, board_size, threshold):
         if system_success(goal_delays_w, threshold):
             D.append([w, goal_delays_w, execution_w])
 
+    # calculate shapley value for the system - what is the contribution of each fault to the grand failure
+    Phi_system = shapley_for_system(E, W)
     print(9)
