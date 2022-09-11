@@ -12,3 +12,25 @@ def print_matrix(matrix):
     fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
     table = [fmt.format(*row) for row in s_padded]
     print('\n'.join(table))
+
+
+def is_superset(w, d):
+    for elem in d:
+        if elem not in w:
+            return False
+    return True
+
+
+def superset_of_element(w, D):
+    for d in D:
+        if is_superset(w, d):
+            return True
+    return False
+
+
+def calculate_minus_set(W, w):
+    W_minus_w = []
+    for elem in W:
+        if elem not in w:
+            W_minus_w.append([elem[0], elem[1], elem[2]])
+    return W_minus_w

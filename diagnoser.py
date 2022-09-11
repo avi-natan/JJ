@@ -1,13 +1,7 @@
 from itertools import combinations
 
 import helper
-
-
-def all_goals_reached(pointers, executions):
-    for a in range(len(pointers)):
-        if pointers[a] < len(executions[a]) - 1:
-            return False
-    return True
+import simulator
 
 
 def extract_certain_faults(plans, execution):
@@ -69,7 +63,46 @@ def extract_certain_faults(plans, execution):
     return fault_list
 
 
-def diagnose(plans, execution, threshold):
+def create_faults_table(faults_list, num_agents):
+    # calculate a maximum length for the table
+    max_len = 0
+    for elem in faults_list:
+        max_len = max(max_len, elem[1])
+
+    faults_tab = [[0 for _ in range(max_len+1)] for _ in range(num_agents)]
+
+    for elem in faults_list:
+        faults_tab[elem[0]][elem[1]] = elem[2]
+    return faults_tab
+
+
+def extract_goal_delays(execution, plans):
+    goal_delays = {}
+    for a in range(len(plans)):
+        goal_delays[f'{a}'] = max(0, len(execution[a]) - len(plans[a]))
+    return goal_delays
+
+
+def subsets(List):
+    subs = []
+    for i in range(0, len(List) + 1):
+        combs = list(combinations(List, i))
+        for comb in combs:
+            lst = []
+            for elem in comb:
+                lst.append(elem)
+            subs.append(lst)
+    return subs
+
+
+def system_success(goal_delays_w, threshold):
+    for gdk in goal_delays_w.keys():
+        if goal_delays_w[gdk] > threshold:
+            return False
+    return True
+
+
+def diagnose(plans, execution, board_size, threshold):
     # logging
     print(f'######################## diagnosing ########################')
     print(f'plans:')
@@ -78,23 +111,44 @@ def diagnose(plans, execution, threshold):
     helper.print_matrix(execution)
 
     # extract goal delays per agent
-    goal_delays = {}
-    for a in range(len(plans)):
-        goal_delays[f'{a}'] = max(0, len(execution[a]) - (len(plans[a]) + threshold))
+    goal_delays = extract_goal_delays(execution, plans)
 
     # extract certain faults. certain faults are faults that certainly happened
     # during the execution. these are either speedups of an agent, or delays
     # that cannot be explained as result of collision between two agents
     W = extract_certain_faults(plans, execution)
     # get a list of the subsets of the list
-    subsets_W = []
-    for i in range(0, len(W) + 1):
-        combs = list(combinations(W, i))
-        for comb in combs:
-            lst = []
-            for elem in comb:
-                lst.append(elem)
-            subsets_W.append(lst)
+    subsets_W = subsets(W)
+
+    # initialize executions list E
+    E = []
+
+    # initialize the empty diagnosis set D
+    D = []
+
+    # for each subset of W, that is not a superset of existing diagnoses,
+    # simulate the plan without the faults in the subset. get the resulting executions
+    # in an executions list, and the subsets for which the system fails, get the subset inside
+    # the diagnosis list D
+    for w in subsets_W:
+        # if helper.superset_of_element(w, D):
+        #     continue
+        # create a faults table for W\w
+        W_minus_w = helper.calculate_minus_set(W, w)
+        faults_tab = create_faults_table(W_minus_w, len(plans))
+
+        # simulate the plans with the faults table
+        execution_w = simulator.simulate_faults_table(board_size, plans, faults_tab)
+        print(9)
+
+        # extract goal delays per agent
+        goal_delays_w = extract_goal_delays(execution_w, plans)
+
+        # insert the execution of W\w into the execution list E: [w, execution]
+        E.append([w, goal_delays_w, execution_w])
+
+        # insert into D this w if simulating W\w led to system success
+        if system_success(goal_delays_w, threshold):
+            D.append([w, goal_delays_w, execution_w])
+
     print(9)
-
-

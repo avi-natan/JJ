@@ -77,14 +77,14 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     for a in range(len(plans)):
         timespace[0][plans[a][0][0]][plans[a][0][1]] = a
 
-    # initialize timestep pointer and plan pointers for the agents
+    # initialize plan pointers for the agents
     ptrs_curr = [0 for _ in range(len(plans))]    # agents position pointers
     ptrs_prev = [-1 for _ in range(len(plans))]   # agents previous position pointers
 
     # initialize for every agent delay counters
     delays = [0 for _ in range(len(plans))]
 
-    # initialize the execution with initial positions and the speed change table
+    # initialize the execution with initial positions
     execution = [[] for _ in plans]
     for a, e in enumerate(execution):
         e.append([plans[a][0][0], plans[a][0][1]])
@@ -192,3 +192,110 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     helper.print_matrix(execution)
 
     return execution, spdchgtab
+
+
+def simulate_faults_table(board_size, plans, faults_table):
+    # initialize empty speed change table
+    spdchgtab = [[] for _ in plans]
+
+    # initialize empty timespace and set initial positions of agents
+    timespace = [[[-1 for _ in range(board_size[1])] for _ in range(board_size[0])]]
+    for a in range(len(plans)):
+        timespace[0][plans[a][0][0]][plans[a][0][1]] = a
+
+    # initialize plan pointers for the agents and execution pointer
+    ptrs_curr = [0 for _ in range(len(plans))]  # agents position pointers
+    ptrs_prev = [-1 for _ in range(len(plans))]  # agents previous position pointers
+    exec_step = 0
+
+    # initialize for every agent delay counters
+    delays = [0 for _ in range(len(plans))]
+
+    # initialize the execution with initial positions
+    execution = [[] for _ in plans]
+    for a, e in enumerate(execution):
+        e.append([plans[a][0][0], plans[a][0][1]])
+
+    # while at least one of the agents pointers does not point to the last planned position,
+    # and while the system is not stuck
+    while not all_goals_reached(ptrs_curr, plans) and not stuck(ptrs_curr, ptrs_prev, plans):
+        # copy the values of the current agent plan pointers to the previous ones
+        for a in range(len(ptrs_curr)):
+            ptrs_prev[a] = ptrs_curr[a]
+
+        # append a slice to timespace and copy the current positions of the agents there
+        timespace.append([[-1 for _ in range(board_size[1])] for _ in range(board_size[0])])
+        for a in range(len(plans)):
+            timespace[-1][plans[a][ptrs_curr[a]][0]][plans[a][ptrs_curr[a]][1]] = a
+
+        # prepare the list of agents yet to advance
+        yet_to_advance = [a for a in range(len(plans))]
+
+        # for every agent check if it already advanced to its last position. if yes, get it out of the
+        # yet to advance list
+        yta0 = []
+        for a in yet_to_advance:
+            if ptrs_curr[a] < len(plans[a]) - 1:
+                yta0.append(a)
+
+        # for every agent check if it has delays to be made.
+        # if yes: decrease its delay by 1, get it out of yta, add 0 to its spdchgtab,
+        #         and add its current position to the execution matrix
+        # if no : leave it in yta
+        yta1 = []
+        for a in yta0:
+            if delays[a] > 0:
+                spdchgtab[a].append(delays[a] * -1j)
+                delays[a] = delays[a] - 1
+                execution[a].append([plans[a][ptrs_curr[a]][0], plans[a][ptrs_curr[a]][1]])
+            else:
+                yta1.append(a)
+
+        # for every agent in yta, add the speed change from the fault table to spdchgtab.
+        # agents that just got out of a delay are excempt
+        for a in yta1:
+            if exec_step < len(faults_table[a]):
+                speed_change = faults_table[a][exec_step]
+                if speed_change < 0:
+                    delays[a] = -1*speed_change - 1
+                spdchgtab[a].append(speed_change)
+            else:
+                spdchgtab[a].append(0)
+        exec_step += 1
+
+        # sort the rest of the agents by their speed this round
+        speeds = [spdchgtab[a][-1] for a in yta1]
+        yta1_sorted = [y for _, y in sorted(zip(speeds, yta1), reverse=True)]
+
+        # for the agents in yta, move them on the last created slide as much as possible from the
+        # 1 step + additional for faster agents, as long as they dont collide, and append their
+        # final positions to the execution table. if they collide, update their delays accordingly
+        # to the interruption_delay_time variable.
+        for a in yta1_sorted:
+            new_plan_pointer = ptrs_curr[a]
+            for p in range(ptrs_curr[a] + 1, ptrs_curr[a] + 1 + spdchgtab[a][-1] + 1):
+                # if during this advance the agent already reached the final plan, break
+                if p == len(plans[a]):
+                    break
+                # if the agent can advance, advance it
+                if timespace[-1][plans[a][p][0]][plans[a][p][1]] == -1:
+                    timespace[-1][plans[a][p][0]][plans[a][p][1]] = a
+                    new_plan_pointer = p
+                # else break out, the saved last pointer and its planned position will be appended and saved
+                else:
+                    break
+            ptrs_curr[a] = new_plan_pointer
+            execution[a].append([plans[a][ptrs_curr[a]][0], plans[a][ptrs_curr[a]][1]])
+
+    print('current pointers:')
+    print(ptrs_curr)
+    print('previous pointers:')
+    print(ptrs_prev)
+    print('plans:')
+    helper.print_matrix(plans)
+    print('speed change table:')
+    helper.print_matrix(spdchgtab)
+    print('execution:')
+    helper.print_matrix(execution)
+
+    return execution
