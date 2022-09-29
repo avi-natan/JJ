@@ -34,3 +34,10 @@ def calculate_minus_set(W, w):
         if elem not in w:
             W_minus_w.append([elem[0], elem[1], elem[2]])
     return W_minus_w
+
+
+def is_subset(sub, sup):
+    for item in sub:
+        if item not in sup:
+            return False
+    return True

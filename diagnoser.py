@@ -148,7 +148,7 @@ def shapley_for_system(E, W):
         # N_minus_i = [item for item in E if w not in item]
         total_sum = 0
         for S in N_minus_i:
-            len_S = len(S)
+            len_S = len(S[0])
             v_S = max(S[1].values())
             # v_S = [item for item in V if item[0] == S][0][1]
             Sui = [item for item in E if equivalent_sets(S[0] + [w], item[0])][0]
@@ -213,4 +213,12 @@ def diagnose(plans, execution, board_size, threshold):
 
     # calculate shapley value for the system - what is the contribution of each fault to the grand failure
     Phi_system = shapley_for_system(E, W)
+
+    # for each w in D, calculate the shapley values of the individual faults
+    Phi_diagnoses = []
+    for d in D:
+        W_d = d[0]
+        E_d = [item for item in E if helper.is_subset(item[0], W_d)]
+        Phi_d = shapley_for_system(E_d, W_d)
+        Phi_diagnoses.append([W_d, Phi_d])
     print(9)
