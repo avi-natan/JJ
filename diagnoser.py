@@ -113,6 +113,10 @@ def equivalent_sets(param, param1):
     return True
 
 
+def costs_max_agent_delay(S):
+    return max(S[1].values())
+
+
 def shapley_for_system(E, W):
     """
     The shapley value function for a group of players N characteristic function v is represented as:
@@ -145,16 +149,12 @@ def shapley_for_system(E, W):
     Phi = []
     for w in W:
         N_minus_i = [item for item in E if w not in item[0]]
-        # N_minus_i = [item for item in E if w not in item]
         total_sum = 0
         for S in N_minus_i:
             len_S = len(S[0])
-            v_S = max(S[1].values())
-            # v_S = [item for item in V if item[0] == S][0][1]
+            v_S = costs_max_agent_delay(S)
             Sui = [item for item in E if equivalent_sets(S[0] + [w], item[0])][0]
-            # Sui = [item for item in E if equivalent_sets(S + [w], item)][0]
-            v_Sui = max(Sui[1].values())
-            # v_Sui = [item for item in V if item[0] == Sui][0][1]
+            v_Sui = costs_max_agent_delay(Sui)
             sum_S = math.factorial(len_S) * math.factorial(len(W)-len_S-1) * (v_Sui - v_S)
             total_sum += sum_S
         Phi_w = total_sum / math.factorial(len(W))
