@@ -117,7 +117,7 @@ def costs_max_agent_delay(S):
     return max(S[1].values())
 
 
-def shapley_for_system(E, W):
+def shapley_for_system(CFS, W):
     """
     The shapley value function for a group of players N characteristic function v is represented as:
 
@@ -130,12 +130,12 @@ def shapley_for_system(E, W):
     i - the player of N for which we calculate the shapley value
     n - |N|
 
-    :param E: containing the values of v
+    :param CFS: containing the values of v
     :param W: contains the group N
     :return:
     """
     # W = [1, 2, 3]
-    # E = subsets(W)
+    # CFS = subsets(W)
     # V = [
     #     [[], 0],
     #     [[1], 80],
@@ -148,12 +148,12 @@ def shapley_for_system(E, W):
     # ]
     Phi = []
     for w in W:
-        N_minus_i = [item for item in E if w not in item[0]]
+        N_minus_i = [item for item in CFS if w not in item[0]]
         total_sum = 0
         for S in N_minus_i:
             len_S = len(S[0])
             v_S = costs_max_agent_delay(S)
-            Sui = [item for item in E if equivalent_sets(S[0] + [w], item[0])][0]
+            Sui = [item for item in CFS if equivalent_sets(S[0] + [w], item[0])][0]
             v_Sui = costs_max_agent_delay(Sui)
             sum_S = math.factorial(len_S) * math.factorial(len(W)-len_S-1) * (v_Sui - v_S)
             total_sum += sum_S
@@ -180,45 +180,44 @@ def diagnose(plans, execution, board_size, threshold):
     # get a list of the subsets of the list
     subsets_W = subsets(W)
 
-    # initialize executions list E
-    E = []
+    # initialize counterfactuals list CFS
+    CFS = []
 
     # initialize the empty diagnosis set D
     D = []
 
-    # for each subset of W, that is not a superset of existing diagnoses,
-    # simulate the plan without the faults in the subset. get the resulting executions
-    # in an executions list, and the subsets for which the system fails, get the subset inside
-    # the diagnosis list D
-    for w in subsets_W:
-        # if helper.superset_of_element(w, D):
+    # for each subset E of W, that is not a superset of existing diagnoses,
+    # simulate the plan without the faults in E. get the resulting executions in a counterfactuals list
+    # for the subsets E for which the system fails, get the subset inside the diagnosis list D
+    for E in subsets_W:
+        # if helper.superset_of_element(E, D):
         #     continue
         # create a faults table for W\w
-        W_minus_w = helper.calculate_minus_set(W, w)
-        faults_tab = create_faults_table(W_minus_w, len(plans))
+        W_minus_E = helper.calculate_minus_set(W, E)
+        faults_tab = create_faults_table(W_minus_E, len(plans))
 
         # simulate the plans with the faults table
-        execution_w = simulator.simulate_faults_table(board_size, plans, faults_tab)
+        execution_E = simulator.simulate_faults_table(board_size, plans, faults_tab)
         print(9)
 
         # extract goal delays per agent
-        goal_delays_w = extract_goal_delays(execution_w, plans)
+        goal_delays_E = extract_goal_delays(execution_E, plans)
 
-        # insert the execution of W\w into the execution list E: [w, execution]
-        E.append([w, goal_delays_w, execution_w])
+        # insert the execution of W\E into the counterfactual list CFS: [E, goal_delays_E, execution_E]
+        CFS.append([E, goal_delays_E, execution_E])
 
-        # insert into D this w if simulating W\w led to system success
-        if system_success(goal_delays_w, threshold):
-            D.append([w, goal_delays_w, execution_w])
+        # insert into D this E if simulating W\E led to system success
+        if system_success(goal_delays_E, threshold):
+            D.append([E, goal_delays_E, execution_E])
 
     # calculate shapley value for the system - what is the contribution of each fault to the grand failure
-    Phi_system = shapley_for_system(E, W)
+    Phi_system = shapley_for_system(CFS, W)
 
     # for each w in D, calculate the shapley values of the individual faults
     Phi_diagnoses = []
     for d in D:
         W_d = d[0]
-        E_d = [item for item in E if helper.is_subset(item[0], W_d)]
-        Phi_d = shapley_for_system(E_d, W_d)
+        CFS_d = [item for item in CFS if helper.is_subset(item[0], W_d)]
+        Phi_d = shapley_for_system(CFS_d, W_d)
         Phi_diagnoses.append([W_d, Phi_d])
     print(9)
