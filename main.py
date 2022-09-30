@@ -45,8 +45,16 @@ def runExperimentBundle(filename):
         for pl in plan_lengths:
             for an in agent_nums:
                 # create a plan
-                plans = planners.create_naiive_plans(bs, pl, an)
-                visualizer.visualize(bs[0], bs[1], plans, orientation='console')
+                """
+                A is a set of agents. an is the size of a (|A|).
+                T is a set of timesteps.
+                V is a set of possible location an agent may occupy.
+                plan
+                pi: A x T -> V is a mapping of (a,t) to the location v that agent a is planned to occupy at time t.
+                    note, that the legth of the plans of different agents may vary.
+                """
+                plan = planners.create_naiive_plan(bs, pl, an)
+                visualizer.visualize(bs[0], bs[1], plan, orientation='console')
                 for fan in faulty_agents_nums:
                     #  choose the faulty agents
                     F = list(range(an))
@@ -58,9 +66,26 @@ def runExperimentBundle(filename):
                             for svt in speed_variation_types:
                                 for idt in interruption_delay_times:
                                     for rn in range(repeats_number):
-                                        # execute the plans to get faulty excution and the speed change table
-                                        execution, spdchgtab = \
-                                            simulator.simulate_instance(bs, pl, an, plans, fan, F, fp, sv, svt, idt,
+                                        # execute the plans to get faulty excution (observation), speed change table,
+                                        # plan step, and plan offset
+                                        """
+                                        observation (execution)
+                                        o: A x T -> V is a mapping of agent a at time t to the location a occupied at time t.
+                                        
+                                        plan step
+                                        tao: A x T -> T is a mapping between the wall clock time and the plan
+                                             step for agent a.
+                                             
+                                        plan offset
+                                        D_tao: A x T -> Z is defined as: t - tao(a,t).
+                                        
+                                        if no faults occur then:
+                                        1. tao(a,t) = t
+                                        2. o(a,t) = pi(a,t)
+                                        3. D_tao(a,t) = 0
+                                        """
+                                        execution, plan_step, plan_offset, spdchgtab = \
+                                            simulator.simulate_instance(bs, pl, an, plan, fan, F, fp, sv, svt, idt,
                                                                         rn+1, instance_number, total_instances)
                                         # advance instance number by 1
                                         instance_number += 1

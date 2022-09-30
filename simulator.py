@@ -69,6 +69,12 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     print(f'instance_number: {instance_number}')
     print(f'total_instances_count: {total_instances_count}')
 
+    # initialize the plan step
+    plan_step = [[] for _ in plans]
+
+    # initialize the plan offset
+    plan_offset = [[] for _ in plans]
+
     # initialize empty speed change table
     spdchgtab = [[] for _ in plans]
 
@@ -92,6 +98,10 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     # while at least one of the agents pointers does not point to the last planned position,
     # and while the system is not stuck
     while not all_goals_reached(ptrs_curr, plans) and not stuck(ptrs_curr, ptrs_prev, plans):
+        # insert the values of the current pointers into the plan step table
+        for i in range(len(ptrs_curr)):
+            plan_step[i].append(ptrs_curr[i])
+
         # copy the values of the current agent plan pointers to the previous ones
         for a in range(len(ptrs_curr)):
             ptrs_prev[a] = ptrs_curr[a]
@@ -180,6 +190,19 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
             ptrs_curr[a] = new_plan_pointer
             execution[a].append([plans[a][ptrs_curr[a]][0], plans[a][ptrs_curr[a]][1]])
 
+    # insert the values of the last current pointers into the plan step table
+    for i in range(len(ptrs_curr)):
+        plan_step[i].append(ptrs_curr[i])
+
+    # trim the plan step ends to be the same as the execution
+    for i in range(len(plan_step)):
+        plan_step[i] = plan_step[i][:len(execution[i])]
+
+    # calculate plan offset
+    for i in range(len(plan_step)):
+        for t in range(len(plan_step[i])):
+            plan_offset[i].append(t-plan_step[i][t])
+
     print('current pointers:')
     print(ptrs_curr)
     print('previous pointers:')
@@ -190,8 +213,12 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     helper.print_matrix(spdchgtab)
     print('execution:')
     helper.print_matrix(execution)
+    print('plan_step:')
+    helper.print_matrix(plan_step)
+    print('plan_offset:')
+    helper.print_matrix(plan_offset)
 
-    return execution, spdchgtab
+    return execution, plan_step, plan_offset, spdchgtab
 
 
 def simulate_faults_table(board_size, plans, faults_table):
