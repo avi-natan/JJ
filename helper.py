@@ -1,3 +1,6 @@
+import copy
+
+
 def print_matrix(matrix):
     s = [[str(e) for e in row] for row in matrix]
     max_len = max(list(map(lambda row: len(row), s)))
@@ -41,3 +44,26 @@ def is_subset(sub, sup):
         if item not in sup:
             return False
     return True
+
+
+def normalize_values_list(values_list):
+    # deepcopy the values first
+    values_list_normalized = copy.deepcopy(values_list)
+
+    # find the minimum value (negative one)
+    minimum_value = min(values_list_normalized)
+
+    # update the values by shifting to the 0
+    for i in range(len(values_list_normalized)):
+        values_list_normalized[i] = values_list_normalized[i] - minimum_value
+
+    # sum up the updated values
+    sum_values = sum(values_list_normalized)
+
+    # divide the values by the sum
+    for i in range(len(values_list_normalized)):
+        values_list_normalized[i] = values_list_normalized[i] * 1.0 / sum_values
+
+    # return the resulting list
+    return values_list_normalized
+

@@ -1,3 +1,4 @@
+import copy
 import math
 from itertools import combinations
 
@@ -211,7 +212,15 @@ def diagnose(plans, execution, board_size, threshold):
             D.append([E, goal_delays_E, execution_E])
 
     # calculate shapley value for the system - what is the contribution of each fault to the grand failure
+    # this is the gold standard
     Phi_system = shapley_for_system(CFS, W)
+
+    # normalize the shpley values for the system
+    values_list = list(map(lambda item: item[1], Phi_system))
+    normalized_values = helper.normalize_values_list(values_list)
+    Phi_system_normalized = copy.deepcopy(Phi_system)
+    for i, ph in enumerate(Phi_system_normalized):
+        ph[1] = normalized_values[i]
 
     # for each w in D, calculate the shapley values of the individual faults
     Phi_diagnoses = []
