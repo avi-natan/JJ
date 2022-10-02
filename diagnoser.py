@@ -232,7 +232,16 @@ def diagnose(plans, execution, board_size, threshold):
         W_d = d[0]
         CFS_d = [item for item in CFS if helper.is_subset(item[0], W_d)]
         Phi_d = shapley_for_system(CFS_d, W_d)
+        # normalize the shpley values for the diagnosis todo - is it correct?
+        values_list = list(map(lambda item: item[1], Phi_d))
+        normalized_values = helper.normalize_values_list(values_list)
+        Phi_d_normalized = copy.deepcopy(Phi_d)
+        for i, ph in enumerate(Phi_d_normalized):
+            ph[1] = normalized_values[i]
+        Phi_diagnoses.append([W_d, Phi_d_normalized])
+        """
         Phi_diagnoses.append([W_d, Phi_d])
+        """
 
     # for each of the fault events, calculate the aggregated shapley values based on the values in the diagnosis list D
     Phi_aggregated = [[fe, 0.0] for fe in W]

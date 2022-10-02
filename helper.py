@@ -62,7 +62,7 @@ def normalize_values_list(values_list):
 
     # divide the values by the sum
     for i in range(len(values_list_normalized)):
-        values_list_normalized[i] = values_list_normalized[i] * 1.0 / sum_values
+        values_list_normalized[i] = values_list_normalized[i] * 1.0 / sum_values if sum_values != 0.0 else 0.0
 
     # return the resulting list
     return values_list_normalized
