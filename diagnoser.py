@@ -163,6 +163,10 @@ def shapley_for_system(CFS, W):
     return Phi
 
 
+def weights_one():
+    return 1.0
+
+
 def diagnose(plans, execution, board_size, threshold):
     # logging
     print(f'######################## diagnosing ########################')
@@ -229,4 +233,22 @@ def diagnose(plans, execution, board_size, threshold):
         CFS_d = [item for item in CFS if helper.is_subset(item[0], W_d)]
         Phi_d = shapley_for_system(CFS_d, W_d)
         Phi_diagnoses.append([W_d, Phi_d])
+
+    # for each of the fault events, calculate the aggregated shapley values based on the values in the diagnosis list D
+    Phi_aggregated = [[fe, 0.0] for fe in W]
+    for agg in Phi_aggregated:
+        fe = agg[0]
+        for Phi_d in Phi_diagnoses:
+            if fe in Phi_d[0]:
+                sh_d_fe = list(filter(lambda f: f[0] == fe, Phi_d[1]))[0][1]
+                weight = weights_one()
+                agg[1] = agg[1] + sh_d_fe * weight
+
+    # normalize the aggregted shapley values
+    values_list = list(map(lambda item: item[1], Phi_aggregated))
+    normalized_values = helper.normalize_values_list(values_list)
+    Phi_aggregated_normalized = copy.deepcopy(Phi_aggregated)
+    for i, ph in enumerate(Phi_aggregated_normalized):
+        ph[1] = normalized_values[i]
+
     print(9)
