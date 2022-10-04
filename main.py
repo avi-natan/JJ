@@ -32,12 +32,12 @@ def runPaperExperiment():
 def runExperimentBundle(filename):
     # read parameters from file
     board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, speed_variations, \
-        speed_variation_types, interruption_delay_times, repeats_number = read_experiment_bundle(filename)
+        speed_variation_types, conflict_delay_times, repeats_number = read_experiment_bundle(filename)
 
     # calculate the total number of instances and initiate instance number
     total_instances = len(board_sizes) * len(plan_lengths) * len(agent_nums) * len(faulty_agents_nums) \
         * len(fault_probabilities) * len(speed_variations) * len(speed_variation_types) \
-        * len(interruption_delay_times) * repeats_number
+        * len(conflict_delay_times) * repeats_number
     instance_number = 1
 
     # create instances
@@ -64,7 +64,7 @@ def runExperimentBundle(filename):
                     for fp in fault_probabilities:
                         for sv in speed_variations:
                             for svt in speed_variation_types:
-                                for idt in interruption_delay_times:
+                                for cdt in conflict_delay_times:
                                     for rn in range(repeats_number):
                                         # execute the plans to get faulty excution (observation), speed change table,
                                         # plan step, and plan offset
@@ -85,7 +85,7 @@ def runExperimentBundle(filename):
                                         3. D_tao(a,t) = 0
                                         """
                                         execution, plan_step, plan_offset, spdchgtab = \
-                                            simulator.simulate_instance(bs, pl, an, plan, fan, F, fp, sv, svt, idt,
+                                            simulator.simulate_instance(bs, pl, an, plan, fan, F, fp, sv, svt, cdt,
                                                                         rn+1, instance_number, total_instances)
                                         # advance instance number by 1
                                         instance_number += 1

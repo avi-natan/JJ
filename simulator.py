@@ -49,7 +49,7 @@ def stuck(ptrs_curr, ptrs_prev, plans):
 
 
 def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_num, faulty_agents, fault_probability,
-                      speed_variation, speed_variation_type, interruption_delay_time, repeat_number,
+                      speed_variation, speed_variation_type, conflict_delay_time, repeat_number,
                       instance_number, total_instances_count):
 
     # logging
@@ -64,7 +64,7 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     print(f'fault_probability: {fault_probability}')
     print(f'speed_variation: {speed_variation}')
     print(f'speed_variation_type: {speed_variation_type}')
-    print(f'interruption_delay_time: {interruption_delay_time}')
+    print(f'conflict_delay_time: {conflict_delay_time}')
     print(f'repeat_number: {repeat_number}')
     print(f'instance_number: {instance_number}')
     print(f'total_instances_count: {total_instances_count}')
