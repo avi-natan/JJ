@@ -35,6 +35,14 @@
 ;; different delay times for agent when
 ;; they conflict each other
 ;;
+;; failure_thresholds: array, filled with
+;; different thresholds for detecting system
+;; and starting diagnostic process.
+;; System failure will be detected for threshold th
+;; when the gap between the clock time and some
+;; agent's timestep is equal to th (meaning that
+;; the said agent is delaying by th steps)
+;;
 ;; repeats_number: number, determins how many
 ;; repeats of each setting to run
 ;;
@@ -51,11 +59,12 @@
 ;; speed_variations:[1,2]
 ;; speed_variation_types:['slower','both']
 ;; conflict_delay_times:[1,2,3]
+;; failure_thresholds:[1,2]
 ;; repeats_number:10
 ;; the total number of instances will be:
-;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 3 x 10 = 960
+;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 3 x 2 x 10 = 1920
 ;;
-;; Important: the maximum number of in the
+;; Important: the maximum number in the
 ;; array of the faulty agents cannot exceed
 ;; the minimum number of the total agents
 board_sizes:[[5,6]]
@@ -66,4 +75,5 @@ fault_probabilities:[0.8]
 speed_variations:[2]
 speed_variation_types:['both']
 conflict_delay_times:[1]
+failure_thresholds:[2]
 repeats_number:100

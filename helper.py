@@ -67,3 +67,55 @@ def normalize_values_list(values_list):
     # return the resulting list
     return values_list_normalized
 
+
+def cut_execution(plan, execution, plan_step, plan_offset, spdchgtab, fth):
+    cut_time = -1
+
+    maxlen = max([len(p) for p in plan_offset])
+    for t in range(maxlen):
+        if cut_time != -1:
+            break
+        else:
+            for i in range(len(plan_offset)):
+                if t < len(plan_offset[i]):
+                    if plan_offset[i][t] >= fth:
+                        cut_time = t
+                        break
+
+    new_plan = []
+    for i in plan:
+        new_plan.append(copy.deepcopy(i[:cut_time + 1]))
+    new_execution = []
+    for i in execution:
+        new_execution.append(copy.deepcopy(i[:cut_time+1]))
+    new_plan_step = []
+    for i in plan_step:
+        new_plan_step.append(copy.deepcopy(i[:cut_time+1]))
+    new_plan_offset = []
+    for i in plan_offset:
+        new_plan_offset.append(copy.deepcopy(i[:cut_time+1]))
+    new_spdchgtab = []
+    for i in spdchgtab:
+        new_spdchgtab.append(copy.deepcopy(i[:cut_time]))
+
+    # cut out cells of timesteps that their global timer in the plan step table exceeds the new last plans
+    print(9)
+    for i in range(len(new_plan_step)):
+        while new_plan_step[i][-1] >= len(new_plan[i]):
+            new_execution[i] = new_execution[i][:-1]
+            new_plan_offset[i] = new_plan_offset[i][:-1]
+            new_plan_step[i] = new_plan_step[i][:-1]
+            new_spdchgtab[i] = new_spdchgtab[i][:-1]
+
+    print('new_plan:')
+    print_matrix(new_plan)
+    print('new speed change table:')
+    print_matrix(new_spdchgtab)
+    print('new_execution:')
+    print_matrix(new_execution)
+    print('new_plan_step:')
+    print_matrix(new_plan_step)
+    print('new_plan_offset:')
+    print_matrix(new_plan_offset)
+
+    return new_plan, new_execution, new_plan_step, new_plan_offset, new_spdchgtab
