@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 import helper
-import planners
+import planner_simple
 import simulator
 import visualizer
 import diagnoser
@@ -57,7 +57,11 @@ def runExperimentBundle(filename):
                 pi: A x T -> V is a mapping of (a,t) to the location v that agent a is planned to occupy at time t.
                     note, that the legth of the plans of different agents may vary.
                 """
-                plan = planners.create_naiive_plan(bs, pl, an)
+                plan, remake = planner_simple.create_naiive_plan(bs, pl, an)
+                while remake:
+                    print('remake')
+                    plan, remake = planner_simple.create_naiive_plan(bs, pl, an)
+                # visualizer.animate(bs[0], bs[1], plan, orientation='console')
                 visualizer.visualize(bs[0], bs[1], plan, orientation='console')
                 for fan in faulty_agents_nums:
                     #  choose the faulty agents

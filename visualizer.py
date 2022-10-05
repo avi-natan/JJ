@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
+import time
 
 const_colors = {
     0: [0, 1, 0],
@@ -75,3 +76,9 @@ def visualize(height, width, plans, mode='grid', orientation='console'):
                   head_width=0.5, head_length=0.5, zorder=3 + ai % len(a_matrix))
 
     plt.show()
+
+def animate(height, width, plan, mode='grid', orientation='console'):
+    for t in range(2,len(plan[0])+1):
+        plan_t = [p[:t] for p in plan]
+        time.sleep(1)
+        visualize(height, width, plan_t, mode, orientation)
