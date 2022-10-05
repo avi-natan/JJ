@@ -6,6 +6,7 @@ from datetime import datetime
 import helper
 import planner_simple
 import simulator
+import simulator2
 import visualizer
 import diagnoser
 
@@ -19,13 +20,12 @@ def read_experiment_bundle(filename):
     agent_nums = ast.literal_eval(lines[2][:-1].split(sep=':')[1])
     faulty_agents_nums = ast.literal_eval(lines[3][:-1].split(sep=':')[1])
     fault_probabilities = ast.literal_eval(lines[4][:-1].split(sep=':')[1])
-    speed_variations = ast.literal_eval(lines[5][:-1].split(sep=':')[1])
-    speed_variation_types = ast.literal_eval(lines[6][:-1].split(sep=':')[1])
-    conflict_delay_times = ast.literal_eval(lines[7][:-1].split(sep=':')[1])
-    failure_thresholds = ast.literal_eval(lines[8][:-1].split(sep=':')[1])
-    repeats_number = int(lines[9][:-1].split(sep=':')[1])
-    return board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, speed_variations, \
-        speed_variation_types, conflict_delay_times, failure_thresholds, repeats_number
+    fault_speed_ranges = ast.literal_eval(lines[5][:-1].split(sep=':')[1])
+    fault_types = ast.literal_eval(lines[6][:-1].split(sep=':')[1])
+    failure_detectors = ast.literal_eval(lines[7][:-1].split(sep=':')[1])
+    repeats_number = int(lines[8][:-1].split(sep=':')[1])
+    return board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
+        fault_types, failure_detectors, repeats_number
 
 
 def runPaperExperiment():
@@ -34,14 +34,13 @@ def runPaperExperiment():
 
 def runExperimentBundle(filename):
     # read parameters from file
-    board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, speed_variations, \
-        speed_variation_types, conflict_delay_times, failure_thresholds, repeats_number = \
-        read_experiment_bundle(filename)
+    board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
+        fault_types, failure_detectors, repeats_number = read_experiment_bundle(filename)
 
     # calculate the total number of instances and initiate instance number
     total_instances = len(board_sizes) * len(plan_lengths) * len(agent_nums) * len(faulty_agents_nums) \
-        * len(fault_probabilities) * len(speed_variations) * len(speed_variation_types) \
-        * len(conflict_delay_times) * repeats_number
+        * len(fault_probabilities) * len(fault_speed_ranges) * len(fault_types) \
+        * len(failure_detectors) * repeats_number
     instance_number = 1
 
     # create instances
@@ -70,43 +69,56 @@ def runExperimentBundle(filename):
                     F = F[:fan]
                     F.sort()
                     for fp in fault_probabilities:
-                        for sv in speed_variations:
-                            for svt in speed_variation_types:
-                                for cdt in conflict_delay_times:
+                        for fsr in fault_speed_ranges:
+                            for ft in fault_types:
+                                for fd in failure_detectors:
                                     for rn in range(repeats_number):
-                                        for fth in failure_thresholds:
-                                            # todo: fix the execution - especially with the plan detection
-                                            # execute the plans to get faulty excution (observation), speed change table,
-                                            # plan step, and plan offset
-                                            """
-                                            observation (execution)
-                                            o: A x T -> V is a mapping of agent a at time t to the location a occupied at time t.
-                                            
-                                            plan step
-                                            tao: A x T -> T is a mapping between the wall clock time and the plan
-                                                 step for agent a.
-                                                 
-                                            plan offset
-                                            D_tao: A x T -> Z is defined as: t - tao(a,t).
-                                            
-                                            if no faults occur then:
-                                            1. tao(a,t) = t
-                                            2. o(a,t) = pi(a,t)
-                                            3. D_tao(a,t) = 0
-                                            """
-                                            execution, plan_step, plan_offset, spdchgtab = \
-                                                simulator.simulate_instance(bs, pl, an, plan, fan, F, fp, sv, svt, cdt,
-                                                                            rn+1, instance_number, total_instances)
+                                        # todo: fix the execution - especially with the plan detection
+                                        # execute the plans to get annotated observation
+                                        """
+                                        observation
+                                        o: A x T -> V is a mapping of agent a at time t to the location a occupied at time t.
+                                        
+                                        plan step
+                                        tao: A x T -> T is a mapping between the wall clock time and the plan
+                                             step for agent a.
+                                             
+                                        plan offset
+                                        D_tao: A x T -> Z is defined as: t - tao(a,t).
+                                        
+                                        if no faults occur then:
+                                        1. tao(a,t) = t
+                                        2. o(a,t) = pi(a,t)
+                                        3. D_tao(a,t) = 0
+                                        
+                                        An annotated observation looks as follows:
+                                        obs = [agent obs]
+                                        agent obs = [temporal units]
+                                        temporal unit = [wall clock, position, plan step, plan offset]
+                                        position = [x coordinate, y coordinate]
+                                    
+                                        according to the document, it follows that:
+                                        t(a,t) = observation[a][t][0]
+                                        o(a,t) = observation[a][t][1]
+                                        tao(a,t) = observation[a][t][2]
+                                        D_tao(a,t) = observation[a][t][3]
+                                        """
+                                        annotated_observation, spdchgtab = \
+                                            simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
+                                                                         instance_number, total_instances)
+                                        # execution, plan_step, plan_offset, spdchgtab = \
+                                        #     simulator.simulate_instance(bs, pl, an, plan, fan, F, fp, fsr, ft,
+                                        #                                 rn+1, instance_number, total_instances)
 
-                                            # # cut the execution until the point where the threshold detects failure
-                                            # new_plan, new_execution, new_plan_step, new_plan_offset, new_spdchgtab = \
-                                            #     helper.cut_execution(plan, execution, plan_step, plan_offset, spdchgtab, fth)
+                                        # # cut the execution until the point where the threshold detects failure
+                                        # new_plan, new_execution, new_plan_step, new_plan_offset, new_spdchgtab = \
+                                        #     helper.cut_execution(plan, execution, plan_step, plan_offset, spdchgtab, fth)
 
-                                            # # diagnose
-                                            # diagnoser.diagnose(new_plan, new_execution, bs, fth)
+                                        # # diagnose
+                                        # diagnoser.diagnose(new_plan, new_execution, bs, fth)
 
-                                            # advance instance number by 1
-                                            instance_number += 1
+                                        # advance instance number by 1
+                                        instance_number += 1
 
 
 if __name__ == '__main__':

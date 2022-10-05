@@ -23,25 +23,36 @@
 ;; fault_probabilities: array, filled with
 ;; different fault probabilities to try
 ;;
-;; speed_variations: array, filled with
-;; different speed variations for the
+;; fault_speed_ranges: array, filled with
+;; different fault speed ranges for the
 ;; faulty agents to try
 ;;
-;; speed_variation_types: array the size of 1
+;; fault_types: array the size of 1
 ;; up to 3, filled with the values 'both',
 ;; 'faster', 'slower'.
 ;;
-;; conflict_delay_times: array, filled with
-;; different delay times for agent when
-;; they conflict each other
-;;
-;; failure_thresholds: array, filled with
-;; different thresholds for detecting system
+;; failure_detector: array, filled with
+;; different methods for detecting system failure
 ;; and starting diagnostic process.
-;; System failure will be detected for threshold th
-;; when the gap between the clock time and some
-;; agent's timestep is equal to th (meaning that
-;; the said agent is delaying by th steps)
+;; options are:
+;; 		- 'fd_complete_or_stuck': runs plans until
+;;		  their completion or until execution is stuck.
+;;		  arguments: none
+;;		- 'fd_max_offset-<th>': detects system failure once
+;;		  the maximal offset among the agents has reached
+;;		  a threshold.
+;;		  arguments: threshold th (positive integer)
+;;		- 'fd_sum_offset'-<th>: detects system failure once
+;;		  the sum of offsets has reached a threshold.
+;;		  arguments: threshold th (positive integer)
+;;		- 'fd_max_at_location'-<th>: detects system failure once
+;;		  the maximal time spent at a location by an agent
+;;		  has reached a threshold.
+;;		  arguments: threshold th (positive integer)
+;;		- 'fd_sum_at_location'-<th>: detects system failure once
+;;		  the sum of times spent at a location by all agents
+;;		  has reached a threshold.
+;;		  arguments: threshold th (positive integer)
 ;;
 ;; repeats_number: number, determins how many
 ;; repeats of each setting to run
@@ -56,13 +67,12 @@
 ;; agent_nums:[6,7]
 ;; faulty_agent_nums:[2,3]
 ;; fault_probabilities:[0.5]
-;; speed_variations:[1,2]
-;; speed_variation_types:['slower','both']
-;; conflict_delay_times:[1,2,3]
-;; failure_thresholds:[1,2]
+;; fault_speed_ranges:[1,2]
+;; fault_types:['slower','both']
+;; failure_detector:['fd_complete_or_stuck','fd_max_offset-2']
 ;; repeats_number:10
 ;; the total number of instances will be:
-;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 3 x 2 x 10 = 1920
+;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 10 = 640
 ;;
 ;; Important: the maximum number in the
 ;; array of the faulty agents cannot exceed
@@ -72,8 +82,7 @@ plan_lengths:[6]
 agent_nums:[3]
 faulty_agent_nums:[2]
 fault_probabilities:[0.8]
-speed_variations:[2]
-speed_variation_types:['both']
-conflict_delay_times:[1]
-failure_thresholds:[2]
-repeats_number:100
+fault_speed_ranges:[2]
+fault_types:['both']
+failure_detector:['fd_complete_or_stuck']
+repeats_number:20

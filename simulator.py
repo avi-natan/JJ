@@ -49,7 +49,7 @@ def stuck(ptrs_curr, ptrs_prev, plans):
 
 
 def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_num, faulty_agents, fault_probability,
-                      speed_variation, speed_variation_type, conflict_delay_time, repeat_number,
+                      fault_speed_range, fault_type, repeat_number,
                       instance_number, total_instances_count):
 
     # logging
@@ -62,9 +62,8 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
     print(f'faulty_agents_num: {faulty_agents_num}')
     print(f'faulty_agents: {faulty_agents}')
     print(f'fault_probability: {fault_probability}')
-    print(f'speed_variation: {speed_variation}')
-    print(f'speed_variation_type: {speed_variation_type}')
-    print(f'conflict_delay_time: {conflict_delay_time}')
+    print(f'fault_speed_range: {fault_speed_range}')
+    print(f'fault_type: {fault_type}')
     print(f'repeat_number: {repeat_number}')
     print(f'instance_number: {instance_number}')
     print(f'total_instances_count: {total_instances_count}')
@@ -140,17 +139,17 @@ def simulate_instance(board_size, plan_length, agents_num, plans, faulty_agents_
             if a in faulty_agents:
                 if random.uniform(0, 1) < fault_probability:
                     # decide the speed change
-                    spchgs = list(range(speed_variation+1))
+                    spchgs = list(range(fault_speed_range + 1))
                     random.shuffle(spchgs)
                     speed_change = spchgs[0]
                     # depends on the speed change type, decide if its faster, slower, or random
-                    if speed_variation_type == 'slower':
+                    if fault_type == 'slower':
                         if spdchgtab[a] != [] and spdchgtab[a][-1] not in [-1, -1j]:
                             spdchgtab[a].append(-speed_change)
                             delays[a] = speed_change - 1
                         else:
                             spdchgtab[a].append(0)
-                    elif speed_variation_type == 'faster':
+                    elif fault_type == 'faster':
                         spdchgtab[a].append(speed_change)
                     else:  # speed_variation_type == 'both':
                         if random.uniform(0, 1) < 0.5:
