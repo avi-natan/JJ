@@ -106,6 +106,7 @@ def runExperimentBundle(filename):
                                         annotated_observation, spdchgtab = \
                                             simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                          instance_number, total_instances)
+                                        print(9)
                                         # execution, plan_step, plan_offset, spdchgtab = \
                                         #     simulator.simulate_instance(bs, pl, an, plan, fan, F, fp, fsr, ft,
                                         #                                 rn+1, instance_number, total_instances)

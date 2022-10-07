@@ -24,14 +24,13 @@ def reduction_positions_to_graph(poss_ptrs_curr, poss_ptrs_next):
     return adjacency_list
 
 
-def detector_stuck(annotated_plan, annotated_observation):
-    # extract lists of previous, current and next timed positions
-    poss_ptrs_prev = [[a, annotated_observation[a][-2][1], annotated_observation[a][-2][2]] if len(annotated_observation[a]) > 1 else [a, [-1, -1], -1] for a in range(len(annotated_observation))]
-    poss_ptrs_curr = [[a, annotated_observation[a][-1][1], annotated_observation[a][-1][2]] for a in range(len(annotated_observation))]
-    poss_ptrs_next = [[a, annotated_plan[a][annotated_observation[a][-1][2] + 1][1], annotated_observation[a][-1][2] + 1] if annotated_observation[a][-1][2] + 1 < len(annotated_plan[a]) else [a, [-1, -1], -1] for a in range(len(annotated_observation))]
+def detector_stuck(annotated_plan, annotated_observation, poss_ptrs_prev, poss_ptrs_curr, poss_ptrs_next):
     # print(f'poss_ptrs_prev: {poss_ptrs_prev}')
     # print(f'poss_ptrs_curr: {poss_ptrs_curr}')
     # print(f'poss_ptrs_next: {poss_ptrs_next}')
+    # if the current pointers are different from the previous return false - i.e., there is a chance to advance
+    if poss_ptrs_prev != poss_ptrs_curr:
+        return False
     # go over the agents and check if the reason is some agent that
     # its finish position is in the path of another agent
     for a in range(len(annotated_plan)):

@@ -59,8 +59,13 @@ def simulate_instance(board_size, plan, faulty_agents, fault_probability, fault_
     # initialize wall clock to zero
     wall_clock = 0
 
+    # save previous, current, and next positions and pointers for failure detection
+    poss_ptrs_prev = [[a, annotated_observation[a][-2][1], annotated_observation[a][-2][2]] if len(annotated_observation[a]) > 1 else [a, [-1, -1], -1] for a in range(len(annotated_observation))]
+    poss_ptrs_curr = [[a, annotated_observation[a][-1][1], annotated_observation[a][-1][2]] for a in range(len(annotated_observation))]
+    poss_ptrs_next = [[a, annotated_plan[a][annotated_observation[a][-1][2] + 1][1], annotated_observation[a][-1][2] + 1] if annotated_observation[a][-1][2] + 1 < len(annotated_plan[a]) else [a, [-1, -1], -1] for a in range(len(annotated_observation))]
+
     # while the failure detector didnt detect failure and while there are agents that didnt finish their plans
-    while not detector(annotated_plan, annotated_observation) \
+    while not detector(annotated_plan, annotated_observation, poss_ptrs_prev, poss_ptrs_curr, poss_ptrs_next) \
             and not all_goals_reached(annotated_plan, annotated_observation):
         # advance the wall clock
         wall_clock += 1
@@ -157,6 +162,9 @@ def simulate_instance(board_size, plan, faulty_agents, fault_probability, fault_
                  new_plan_pointer,
                  wall_clock-new_plan_pointer])
         # print([annotated_observation[a][-1] for a in range(len(annotated_observation))])
-    print(9)
-
+        # print(77)
+        # extract lists of previous, current and next timed positions for failure detection
+        poss_ptrs_prev = copy.deepcopy(poss_ptrs_curr)
+        poss_ptrs_curr = [[a, annotated_observation[a][-1][1], annotated_observation[a][-1][2]] for a in range(len(annotated_observation))]
+        poss_ptrs_next = [[a, annotated_plan[a][annotated_observation[a][-1][2] + 1][1], annotated_observation[a][-1][2] + 1] if annotated_observation[a][-1][2] + 1 < len(annotated_plan[a]) else [a, [-1, -1], -1] for a in range(len(annotated_observation))]
     return annotated_observation, spdchgtab
