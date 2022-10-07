@@ -22,7 +22,7 @@ def create_naiive_plan(board_size, plan_length, agents_number):
     # initialize the plan
     plan = [[] for _ in range(agents_number)]
 
-    # create the first slice of the time expansion graph, and set random start positions
+    # create the first slice of the time expansion graph
     time_expansion_graph = [[[-1 for _x in range(board_size[1])] for _y in range(board_size[0])]]
 
     # randomly generate the start positions, and put them on the time expansion graph

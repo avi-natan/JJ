@@ -35,21 +35,21 @@
 ;; different methods for detecting system failure
 ;; and starting diagnostic process.
 ;; options are:
-;; 		- 'fd_complete_or_stuck': runs plans until
-;;		  their completion or until execution is stuck.
+;; 		- 'fd_stuck': detects system failure once
+;;		  execution is stuck.
 ;;		  arguments: none
 ;;		- 'fd_max_offset-<th>': detects system failure once
 ;;		  the maximal offset among the agents has reached
 ;;		  a threshold.
 ;;		  arguments: threshold th (positive integer)
-;;		- 'fd_sum_offset'-<th>: detects system failure once
+;;		- 'fd_sum_offset-<th>': detects system failure once
 ;;		  the sum of offsets has reached a threshold.
 ;;		  arguments: threshold th (positive integer)
-;;		- 'fd_max_at_location'-<th>: detects system failure once
+;;		- 'fd_max_at_location-<th>': detects system failure once
 ;;		  the maximal time spent at a location by an agent
 ;;		  has reached a threshold.
 ;;		  arguments: threshold th (positive integer)
-;;		- 'fd_sum_at_location'-<th>: detects system failure once
+;;		- 'fd_sum_at_location-<th>': detects system failure once
 ;;		  the sum of times spent at a location by all agents
 ;;		  has reached a threshold.
 ;;		  arguments: threshold th (positive integer)
@@ -69,7 +69,7 @@
 ;; fault_probabilities:[0.5]
 ;; fault_speed_ranges:[1,2]
 ;; fault_types:['slower','both']
-;; failure_detector:['fd_complete_or_stuck','fd_max_offset-2']
+;; failure_detector:['fd_stuck','fd_max_offset-2']
 ;; repeats_number:10
 ;; the total number of instances will be:
 ;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 10 = 640
@@ -78,11 +78,11 @@
 ;; array of the faulty agents cannot exceed
 ;; the minimum number of the total agents
 board_sizes:[[5,6]]
-plan_lengths:[6]
-agent_nums:[3]
-faulty_agent_nums:[2]
+plan_lengths:[8]
+agent_nums:[7]
+faulty_agent_nums:[5]
 fault_probabilities:[0.8]
 fault_speed_ranges:[2]
 fault_types:['both']
-failure_detector:['fd_complete_or_stuck']
+failure_detector:['fd_stuck']
 repeats_number:20

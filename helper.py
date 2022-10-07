@@ -119,3 +119,28 @@ def cut_execution(plan, execution, plan_step, plan_offset, spdchgtab, fth):
     print_matrix(new_plan_offset)
 
     return new_plan, new_execution, new_plan_step, new_plan_offset, new_spdchgtab
+
+
+def detect_cycle(source, graph, color):
+    color[source] = "G"
+
+    for v in graph[source]:
+        if color[v] == "W":
+            cycle = detect_cycle(v, graph, color)
+            if cycle:
+                return True
+        elif color[v] == "G":
+            return True
+    color[source] = "B"
+    return False
+
+
+def search_cycles(graph):
+    for source in graph.keys():
+        color = {}
+        for node in graph.keys():
+            color[node] = "W"
+        has_cycle = detect_cycle(source, graph, color)
+        if has_cycle:
+            return True
+    return False
