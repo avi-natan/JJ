@@ -59,8 +59,10 @@ def shapley_for_system(CFS, W, cost_function):
 def extract_certain_faults(plan, observation):
     fault_list = []
 
-    # create faults table
+    # create faults table and initialize the first trivial faults values to 'ok'
     fault_tab = [[] for _ in observation]
+    for a in range(len(observation)):
+        fault_tab[a].append('ok')
     # go over the observation and depends on each two
     # consecutive observed steps, populate the faults table
     for a in range(len(observation)):
@@ -81,7 +83,7 @@ def extract_certain_faults(plan, observation):
                     if len(observation[aa]) > t+1:
                         positions = plan[aa][observation[aa][t][2]:observation[aa][t+1][2]+1]
                     elif len(observation[aa]) == t+1:
-                        positions = plan[aa][observation[aa][t][2]]
+                        positions = [plan[aa][observation[aa][t][2]]]
                     else:
                         continue
                     if plan[a][observation[a][t][2]+1] in positions:
@@ -97,7 +99,7 @@ def extract_certain_faults(plan, observation):
         while t < len(fault_tab[a]):
             if type(fault_tab[a][t]) is str and fault_tab[a][t] == 'del':
                 t1 = t + 1
-                while type(fault_tab[a][t1]) is str and fault_tab[a][t1] == 'del':
+                while t1 < len(fault_tab[a]) and type(fault_tab[a][t1]) is str and fault_tab[a][t1] == 'del':
                     t1 += 1
                 l = t1 - t
                 fault_list.append([a, t, -l])
@@ -165,4 +167,4 @@ def diagnose(board_size, plan, observation, blame_methods, cost_function, failur
 
     print(9)
     # todo continue
-    return None
+    return shapley_gold

@@ -175,8 +175,9 @@ def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_det
     annotated_plan = [[[t, pa] for t, pa in enumerate(plan_a)] for plan_a in plan]
 
     # initialize the annotated observation with initial positions
-    annotated_observation = [[[0, [annotated_plan[a][0][1][0], annotated_plan[a][0][1][1]], annotated_plan[a][0][0], 0]]
-                             for a in range(len(annotated_plan))]
+    annotated_observation = [[] for _ in range(len(annotated_plan))]
+    for a in range(len(annotated_plan)):
+        annotated_observation[a].append([0, [annotated_plan[a][0][1][0], annotated_plan[a][0][1][1]], annotated_plan[a][0][0], 0])
 
     # initialize speed change table with the first speed change
     spdchgtab = [[] for _ in annotated_plan]
@@ -195,7 +196,7 @@ def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_det
     detector = failure_detectors.make_detector(failure_detector)
 
     # initialize wall clock to zero
-    wall_clock = 0
+    wall_clock = 1
 
     # save previous, current, and next positions and pointers for failure detection
     poss_ptrs_prev = [[a, annotated_observation[a][-2][1], annotated_observation[a][-2][2]] if len(
