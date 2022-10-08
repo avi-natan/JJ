@@ -167,7 +167,9 @@ def simulate_instance(board_size, plan, faulty_agents, fault_probability, fault_
         poss_ptrs_prev = copy.deepcopy(poss_ptrs_curr)
         poss_ptrs_curr = [[a, annotated_observation[a][-1][1], annotated_observation[a][-1][2]] for a in range(len(annotated_observation))]
         poss_ptrs_next = [[a, annotated_plan[a][annotated_observation[a][-1][2] + 1][1], annotated_observation[a][-1][2] + 1] if annotated_observation[a][-1][2] + 1 < len(annotated_plan[a]) else [a, [-1, -1], -1] for a in range(len(annotated_observation))]
-    return annotated_observation, spdchgtab
+    if not detector(annotated_plan, annotated_observation, poss_ptrs_prev, poss_ptrs_curr, poss_ptrs_next):
+        return [], [], True
+    return annotated_observation, spdchgtab, False
 
 
 def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_detector):

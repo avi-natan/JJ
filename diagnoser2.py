@@ -42,10 +42,14 @@ def shapley_for_system(CFS, W, cost_function):
     Phi = []
     n = len(W)
     cost_func = cost_functions.make_cost_function(cost_function)
+    temp_w = 0
     for w in W:
         W_minus_w = [item for item in CFS if w not in item[0]]
         total_sum = 0
+        temp_S = 0
         for S in W_minus_w:
+            print(f'temp_w: {temp_w}/{n}, temp_S:{temp_S}/{len(W_minus_w)}')
+            temp_S += 1
             len_S = len(S[0])
             f_S = cost_func(S)
             Sui = [item for item in CFS if helper.equivalent_sets(S[0] + [w], item[0])][0]
@@ -54,6 +58,7 @@ def shapley_for_system(CFS, W, cost_function):
             total_sum += sum_S
         Phi_w = total_sum / math.factorial(n)
         Phi.append([w, Phi_w])
+        temp_w += 1
     return Phi
 
 def extract_certain_faults(plan, observation):
@@ -118,13 +123,17 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     # for each of the fault events in W giver a cost function
     # get a list of the subsets of the list
     subsets_W = helper.subsets(W)
+    print(len(subsets_W))
 
     # initialize counterfactuals list CFS
     CFS = []
 
     # for each subset E of W, simulate the plan without the faults in E.
     # get the resulting executions in a counterfactuals list
+    temp = 0
     for E in subsets_W:
+        print(f'{temp}/{len(subsets_W)}')
+        temp += 1
         # create a faults table for W\E
         W_minus_E = helper.calculate_minus_set(W, E)
         faults_tab_W_minus_E = create_faults_table(W_minus_E, len(plan))
@@ -137,6 +146,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
 
     # calculate shapley value for the system - what is the contribution of each fault to the grand failure
     # this is the gold standard
+    print('shapley for system')
     shapley_gold = shapley_for_system(CFS, W, cost_function)
 
     # normalize the shpley values for the system
@@ -149,7 +159,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     return shapley_gold_normalized
 
 
-def diagnose(board_size, plan, observation, blame_methods, cost_function, failure_detector):
+def diagnose(board_size, plan, observation, diagnosis_generation_methods, cost_function, failure_detector):
     # logging
     print(f'######################## diagnosing ########################')
     print(f'plan:')
@@ -161,10 +171,15 @@ def diagnose(board_size, plan, observation, blame_methods, cost_function, failur
     # during the execution. these are either speedups of an agent, or delays
     # that cannot be explained as result of collision between two agents
     W = extract_certain_faults(plan, observation)
+    print(W)
+    print(len(W))
 
     # calculate gold standard shapley values for the faulty events w in W
     shapley_gold = calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_detector)
 
     print(9)
+    # for each of the diagnosis generation methods, input the same input as the
+    # gold standard and then calculate an additive shapley values - i.e., for every
+    # set of diagnoses (cardinality, tempral, etc) calculate the shapley value until then
     # todo continue
     return shapley_gold
