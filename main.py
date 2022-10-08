@@ -3,6 +3,7 @@ import ast
 import random
 from datetime import datetime
 
+import diagnoser2
 import helper
 import planner_simple
 import simulator
@@ -24,9 +25,10 @@ def read_experiment_bundle(filename):
     fault_types = ast.literal_eval(lines[6][:-1].split(sep=':')[1])
     failure_detectors = ast.literal_eval(lines[7][:-1].split(sep=':')[1])
     cost_functions = ast.literal_eval(lines[8][:-1].split(sep=':')[1])
-    repeats_number = int(lines[8][:-1].split(sep=':')[1])
+    diagnosis_generation_methods = ast.literal_eval(lines[9][:-1].split(sep=':')[1])
+    repeats_number = int(lines[10][:-1].split(sep=':')[1])
     return board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
-        fault_types, failure_detectors, cost_functions, repeats_number
+        fault_types, failure_detectors, cost_functions, diagnosis_generation_methods, repeats_number
 
 
 def runPaperExperiment():
@@ -36,12 +38,13 @@ def runPaperExperiment():
 def runExperimentBundle(filename):
     # read parameters from file
     board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
-        fault_types, failure_detectors, cost_functions, repeats_number = read_experiment_bundle(filename)
+        fault_types, failure_detectors, cost_functions, diagnosis_generation_methods, repeats_number = \
+        read_experiment_bundle(filename)
 
     # calculate the total number of instances and initiate instance number
     total_instances = len(board_sizes) * len(plan_lengths) * len(agent_nums) * len(faulty_agents_nums) \
         * len(fault_probabilities) * len(fault_speed_ranges) * len(fault_types) \
-        * len(failure_detectors) * len(cost_functions) * repeats_number
+        * len(failure_detectors) * len(cost_functions) * len(diagnosis_generation_methods) * repeats_number
     instance_number = 1
 
     # create instances
@@ -57,10 +60,10 @@ def runExperimentBundle(filename):
                 pi: A x T -> V is a mapping of (a,t) to the location v that agent a is planned to occupy at time t.
                     note, that the legth of the plans of different agents may vary.
                 """
-                plan, remake = planner_simple.create_naiive_plan(bs, pl, an)
-                while remake:
-                    print('remake')
-                    plan, remake = planner_simple.create_naiive_plan(bs, pl, an)
+                plan, plan_remake = planner_simple.create_naiive_plan(bs, pl, an)
+                while plan_remake:
+                    print('plan remake')
+                    plan, plan_remake = planner_simple.create_naiive_plan(bs, pl, an)
                 # visualizer.animate(bs[0], bs[1], plan, orientation='console')
                 visualizer.visualize(bs[0], bs[1], plan, orientation='console')
                 for fan in faulty_agents_nums:
@@ -74,7 +77,6 @@ def runExperimentBundle(filename):
                             for ft in fault_types:
                                 for fd in failure_detectors:
                                     for rn in range(repeats_number):
-                                        # todo: fix the execution - especially with the plan detection
                                         # execute the plans to get annotated observation
                                         """
                                         observation
@@ -104,23 +106,24 @@ def runExperimentBundle(filename):
                                         tao(a,t) = observation[a][t][2]
                                         D_tao(a,t) = observation[a][t][3]
                                         """
-                                        annotated_observation, spdchgtab = \
+                                        annotated_observation, spdchgtab, simulation_remake = \
                                             simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                          instance_number, total_instances)
-                                        print(9)
-                                        # execution, plan_step, plan_offset, spdchgtab = \
-                                        #     simulator.simulate_instance(bs, pl, an, plan, fan, F, fp, fsr, ft,
-                                        #                                 rn+1, instance_number, total_instances)
-
-                                        # # cut the execution until the point where the threshold detects failure
-                                        # new_plan, new_execution, new_plan_step, new_plan_offset, new_spdchgtab = \
-                                        #     helper.cut_execution(plan, execution, plan_step, plan_offset, spdchgtab, fth)
-
-                                        # # diagnose
-                                        # diagnoser.diagnose(new_plan, new_execution, bs, fth)
-
+                                        while simulation_remake:
+                                            print('simulation remake')
+                                            annotated_observation, spdchgtab, simulation_remake = \
+                                                simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
+                                                                             instance_number, total_instances)
+                                        helper.print_matrix(annotated_observation)
                                         # advance instance number by 1
                                         instance_number += 1
+
+                                        for cf in cost_functions:
+                                            # diagnose
+                                            res = diagnoser2.diagnose(bs, plan, annotated_observation, cf,
+                                                                      diagnosis_generation_methods, fd)
+                                            print(9)
+
 
 
 if __name__ == '__main__':

@@ -159,7 +159,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     return shapley_gold_normalized
 
 
-def diagnose(board_size, plan, observation, diagnosis_generation_methods, cost_function, failure_detector):
+def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_methods, failure_detector):
     # logging
     print(f'######################## diagnosing ########################')
     print(f'plan:')

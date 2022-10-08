@@ -70,6 +70,20 @@
 ;;		  number of timesteps the agents spent at the
 ;;		  last observed position.
 ;;
+;; diagnosis_generation_methods: array, filled with
+;; different methods for generating diagnoses.
+;; options are:
+;;		- 'dgm_cardi_asc_tempo_rnd': generate diagnoses
+;;		  by ascending cardinaity and random temporality
+;;		- 'dgm_cardi_asc_tempo_dsc': generate diagnoses
+;;		  by ascending cardinaity and descending temporality
+;;		- 'dgm_cardi_asc_tempo_asc': generate diagnoses
+;;		  by ascending cardinaity and ascending temporality
+;;		- 'dgm_cardi_dsc_tempo_dsc': generate diagnoses
+;;		  by descending cardinaity and descending temporality
+;;		- 'dgm_cardi_dsc_tempo_asc': generate diagnoses
+;;		  by descending cardinaity and ascending temporality
+;;
 ;; repeats_number: number, determins how many
 ;; repeats of each setting to run
 ;;
@@ -87,20 +101,22 @@
 ;; fault_types:['slower','both']
 ;; failure_detectors:['fd_stuck','fd_max_offset-2']
 ;; cost_functions:['cost_stuck','cost_max_offset']
+;; diagnosis_generation_methods:['dgm_cardi_asc_tempo_rnd']
 ;; repeats_number:10
 ;; the total number of instances will be:
-;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 2 x 10 = 1280
+;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 2 x 1 x 10 = 1280
 ;;
 ;; Important: the maximum number in the
 ;; array of the faulty agents cannot exceed
 ;; the minimum number of the total agents
 board_sizes:[[5,6]]
 plan_lengths:[8]
-agent_nums:[7]
-faulty_agent_nums:[5]
+agent_nums:[8]
+faulty_agent_nums:[4]
 fault_probabilities:[0.8]
 fault_speed_ranges:[2]
 fault_types:['both']
 failure_detectors:['fd_stuck']
 cost_functions:['cost_max_offset']
+diagnosis_generation_methods:['dgm_cardi_asc_tempo_rnd']
 repeats_number:20
