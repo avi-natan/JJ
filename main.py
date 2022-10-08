@@ -23,9 +23,10 @@ def read_experiment_bundle(filename):
     fault_speed_ranges = ast.literal_eval(lines[5][:-1].split(sep=':')[1])
     fault_types = ast.literal_eval(lines[6][:-1].split(sep=':')[1])
     failure_detectors = ast.literal_eval(lines[7][:-1].split(sep=':')[1])
+    cost_functions = ast.literal_eval(lines[8][:-1].split(sep=':')[1])
     repeats_number = int(lines[8][:-1].split(sep=':')[1])
     return board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
-        fault_types, failure_detectors, repeats_number
+        fault_types, failure_detectors, cost_functions, repeats_number
 
 
 def runPaperExperiment():
@@ -35,12 +36,12 @@ def runPaperExperiment():
 def runExperimentBundle(filename):
     # read parameters from file
     board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
-        fault_types, failure_detectors, repeats_number = read_experiment_bundle(filename)
+        fault_types, failure_detectors, cost_functions, repeats_number = read_experiment_bundle(filename)
 
     # calculate the total number of instances and initiate instance number
     total_instances = len(board_sizes) * len(plan_lengths) * len(agent_nums) * len(faulty_agents_nums) \
         * len(fault_probabilities) * len(fault_speed_ranges) * len(fault_types) \
-        * len(failure_detectors) * repeats_number
+        * len(failure_detectors) * len(cost_functions) * repeats_number
     instance_number = 1
 
     # create instances

@@ -31,7 +31,7 @@
 ;; up to 3, filled with the values 'both',
 ;; 'faster', 'slower'.
 ;;
-;; failure_detector: array, filled with
+;; failure_detectors: array, filled with
 ;; different methods for detecting system failure
 ;; and starting diagnostic process.
 ;; options are:
@@ -54,6 +54,22 @@
 ;;		  has reached a threshold.
 ;;		  arguments: threshold th (positive integer)
 ;;
+;; cost_functions: array, filled with different
+;; methods for calculating the cost of a system run.
+;; options are:
+;;		- 'cost_stuck': binary [0,1]. 1 if at least one
+;;		  agent got stuck, and 0 otherwise.
+;;		- 'cost_max_offset': returns the maximum offset
+;;		  of the agents at the last observation step.
+;;		- 'cost_sum_offset': returns the sum of offsets
+;;		  of the agents at the last observation step.
+;;		- 'cost_max_at_location': returns the maximum 
+;;		  number of timesteps an agent spent at the
+;;		  last observed position.
+;;		- 'cost_sum_at_location': returns the summed
+;;		  number of timesteps the agents spent at the
+;;		  last observed position.
+;;
 ;; repeats_number: number, determins how many
 ;; repeats of each setting to run
 ;;
@@ -69,10 +85,11 @@
 ;; fault_probabilities:[0.5]
 ;; fault_speed_ranges:[1,2]
 ;; fault_types:['slower','both']
-;; failure_detector:['fd_stuck','fd_max_offset-2']
+;; failure_detectors:['fd_stuck','fd_max_offset-2']
+;; cost_functions:['cost_stuck','cost_max_offset']
 ;; repeats_number:10
 ;; the total number of instances will be:
-;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 10 = 640
+;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 2 x 10 = 1280
 ;;
 ;; Important: the maximum number in the
 ;; array of the faulty agents cannot exceed
@@ -84,5 +101,6 @@ faulty_agent_nums:[5]
 fault_probabilities:[0.8]
 fault_speed_ranges:[2]
 fault_types:['both']
-failure_detector:['fd_stuck']
+failure_detectors:['fd_stuck']
+cost_functions:['cost_max_offset']
 repeats_number:20

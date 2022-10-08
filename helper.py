@@ -1,4 +1,5 @@
 import copy
+from itertools import combinations
 
 
 def print_matrix(matrix):
@@ -144,3 +145,23 @@ def search_cycles(graph):
         if has_cycle:
             return True
     return False
+
+def subsets(List):
+    subs = []
+    for i in range(0, len(List) + 1):
+        combs = list(combinations(List, i))
+        for comb in combs:
+            lst = []
+            for elem in comb:
+                lst.append(elem)
+            subs.append(lst)
+    return subs
+
+def equivalent_sets(set1, set2):
+    for i in set1:
+        if i not in set2:
+            return False
+    for i in set2:
+        if i not in set1:
+            return False
+    return True
