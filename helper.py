@@ -32,12 +32,12 @@ def superset_of_element(w, D):
     return False
 
 
-def calculate_minus_set(W, w):
-    W_minus_w = []
+def calculate_minus_set(W, S):
+    W_minus_S = []
     for elem in W:
-        if elem not in w:
-            W_minus_w.append([elem[0], elem[1], elem[2]])
-    return W_minus_w
+        if elem not in S:
+            W_minus_S.append([elem[0], elem[1], elem[2]])
+    return W_minus_S
 
 
 def is_subset(sub, sup):

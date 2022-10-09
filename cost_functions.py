@@ -1,5 +1,5 @@
-def cost_max_offset(CF):
-    return max(0, max([pl[-1][3] for pl in CF[1]]))
+def cost_max_offset(cf):
+    return max(0, max([pl[-1][3] for pl in cf]))
 
 def make_cost_function(cost_function):
     if cost_function[:11] == 'cost_max_of':
