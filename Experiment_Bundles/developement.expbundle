@@ -111,12 +111,12 @@
 ;; the minimum number of the total agents
 board_sizes:[[5,6]]
 plan_lengths:[8]
-agent_nums:[3]
+agent_nums:[7]
 faulty_agent_nums:[2]
 fault_probabilities:[0.8]
 fault_speed_ranges:[2,3]
 fault_types:['both']
-failure_detectors:['fd_stuck']
+failure_detectors:['fd_max_offset-3']
 cost_functions:['cost_max_offset']
 diagnosis_generation_methods:['dgm_cardi_asc_tempo_rnd']
 repeats_number:20

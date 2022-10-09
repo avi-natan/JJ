@@ -60,12 +60,24 @@ def detector_stuck(annotated_plan, annotated_observation, poss_ptrs_prev, poss_p
         return True
     return False
 
+def make_detector_max_offset(threshold):
+    def detector_max_offset(annotated_plan, annotated_observation, poss_ptrs_prev, poss_ptrs_curr, poss_ptrs_next):
+        last_offsets = [annotated_observation[a][-1][3] for a in range(len(annotated_observation))]
+        if max(last_offsets) > threshold:
+            print('fail')
+            return True
+        else:
+            return False
+    return detector_max_offset
+
+
 def make_detector(failure_detector):
     if failure_detector[:9] == 'fd_max_of':
         # todo implement
         print('fd_max_offset')
         print(f'threshold: {failure_detector[14:]}')
-        return detector_stuck
+        detector_max_offset = make_detector_max_offset(int(failure_detector[14:]))
+        return detector_max_offset
     elif failure_detector[:9] == 'fd_sum_of':
         # todo implement
         print('fd_sum_offset')
