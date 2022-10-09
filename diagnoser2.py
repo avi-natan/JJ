@@ -19,7 +19,7 @@ def create_faults_table(faults_list, num_agents):
         faults_tab[elem[0]][elem[1]] = elem[2]
     return faults_tab
 
-def shapley(board_size, plan, failure_wall_clock_time, W, cost_function):
+def shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, seen_cf):
     """
     The shapley value function for player w, a group of players W and characteristic function f is represented as:
 
@@ -40,6 +40,7 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function):
     #     [[2, 3], 72],
     #     [[1, 2, 3], 90]
     # ]
+    print(f'{W}')
     Phi = []
     n = len(W)
     cost_func = cost_functions.make_cost_function(cost_function)
@@ -50,15 +51,21 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function):
         total_sum = 0
         temp_S = 0
         for S in subsets_W_minus_w:
-            print(f'temp_w: {temp_w}/{n}, temp_S:{temp_S}/{len(subsets_W_minus_w)}')
+            # print(f'temp_w: {temp_w}/{n}, temp_S:{temp_S}/{len(subsets_W_minus_w)}')
             temp_S += 1
             # save the length of S
             len_S = len(S)
 
             # create a faults table for W\S
             W_minus_S = helper.calculate_minus_set(W, S)
-            faults_tab_W_minus_S = create_faults_table(W_minus_S, len(plan))
-            cf_S = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_S, failure_wall_clock_time)
+            if W_minus_S in seen:
+                cf_S = seen_cf[str(W_minus_S)]
+            else:
+                print(f'{W_minus_S}')
+                faults_tab_W_minus_S = create_faults_table(W_minus_S, len(plan))
+                cf_S = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_S, failure_wall_clock_time)
+                seen.append(W_minus_S)
+                seen_cf[str(W_minus_S)] = cf_S
             f_cf_S = cost_func(cf_S)
 
             # create the set Suw
@@ -66,8 +73,14 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function):
 
             # create a faults table for W\(Suw)
             W_minus_Suw = helper.calculate_minus_set(W, Suw)
-            faults_tab_W_minus_Suw = create_faults_table(W_minus_Suw, len(plan))
-            cf_Suw = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_Suw, failure_wall_clock_time)
+            if W_minus_Suw in seen:
+                cf_Suw = seen_cf[str(W_minus_Suw)]
+            else:
+                print(f'{W_minus_Suw}')
+                faults_tab_W_minus_Suw = create_faults_table(W_minus_Suw, len(plan))
+                cf_Suw = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_Suw, failure_wall_clock_time)
+                seen.append(W_minus_Suw)
+                seen_cf[str(W_minus_Suw)] = cf_Suw
             f_cf_Suw = cost_func(cf_Suw)
 
             # calculate the sum for S and add it to the total sum
@@ -136,13 +149,16 @@ def extract_certain_faults(plan, observation):
 
 
 def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_wall_clock_time):
+    print('shapley gold standard')
+
     # time logging
     start_time = datetime.now()
 
     # calculate shapley value for the system - what is the contribution of each fault to the grand failure
-    # this is the gold standard
-    print('shapley gold standard')
-    shapley_gold = shapley(board_size, plan, failure_wall_clock_time, W, cost_function)
+    # this is the gold standard. use memorization
+    seen = []
+    seen_cf = {}
+    shapley_gold = shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, seen_cf)
 
     # normalize the shpley values for the system
     values_list = list(map(lambda item: item[1], shapley_gold))
@@ -154,6 +170,8 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     # time logging
     end_time = datetime.now()
     runtime = end_time - start_time
+
+    print(f'shapley gold runtime: {runtime}')
 
     return shapley_gold_normalized, runtime
 
