@@ -120,6 +120,9 @@ def runExperimentBundle(filename):
                                                 simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                              instance_number, total_instances)
                                         helper.print_matrix(annotated_observation)
+                                        failure_wall_clock_time = max([annotated_observation[a][-1][0]
+                                                                       for a in range(len(annotated_observation))])
+                                        print(9)
 
                                         for cf in cost_functions:
                                             # diagnose
@@ -127,7 +130,7 @@ def runExperimentBundle(filename):
                                             # todo the shapley value! continue in the diagnoser2 file
                                             shapley_gold, runtime_gold = \
                                                 diagnoser2.diagnose(bs, plan, annotated_observation, cf,
-                                                                    diagnosis_generation_methods, fd)
+                                                                    diagnosis_generation_methods, failure_wall_clock_time)
                                             # create a result row and append it to reults
                                             result_row = [
                                                 str(bs),

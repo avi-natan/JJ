@@ -119,7 +119,7 @@ def extract_certain_faults(plan, observation):
     return fault_list
 
 
-def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_detector):
+def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_wall_clock_time):
     # time logging
     start_time = datetime.now()
 
@@ -143,7 +143,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
         faults_tab_W_minus_E = create_faults_table(W_minus_E, len(plan))
 
         # simulate the plans with the faults table to get the counterfactual
-        cf_E = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_detector)
+        cf_E = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_wall_clock_time)
 
         # insert the execution of W\E into the counterfactual list CFS: [E, goal_delays_E, execution_E]
         CFS.append([E, cf_E])
@@ -167,7 +167,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     return shapley_gold_normalized, runtime
 
 
-def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_methods, failure_detector):
+def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_methods, failure_wall_clock_time):
     # logging
     print(f'######################## diagnosing ########################')
     print(f'plan:')
@@ -183,7 +183,7 @@ def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_
     print(len(W))
 
     # calculate gold standard shapley values for the faulty events w in W
-    shapley_gold, runtime_gold = calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_detector)
+    shapley_gold, runtime_gold = calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_wall_clock_time)
 
     print(9)
     # for each of the diagnosis generation methods, input the same input as the

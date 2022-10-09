@@ -172,7 +172,7 @@ def simulate_instance(board_size, plan, faulty_agents, fault_probability, fault_
     return annotated_observation, spdchgtab, False
 
 
-def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_detector):
+def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_wall_clock_time):
     # annotate the plans
     annotated_plan = [[[t, pa] for t, pa in enumerate(plan_a)] for plan_a in plan]
 
@@ -194,25 +194,11 @@ def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_det
     # initialize for every agent delay counters
     delay_counters = [0 for _ in range(len(annotated_plan))]
 
-    # initialize the failure detector
-    detector = failure_detectors.make_detector(failure_detector)
-
     # initialize wall clock to zero
     wall_clock = 1
 
-    # save previous, current, and next positions and pointers for failure detection
-    poss_ptrs_prev = [[a, annotated_observation[a][-2][1], annotated_observation[a][-2][2]] if len(
-        annotated_observation[a]) > 1 else [a, [-1, -1], -1] for a in range(len(annotated_observation))]
-    poss_ptrs_curr = [[a, annotated_observation[a][-1][1], annotated_observation[a][-1][2]] for a in
-                      range(len(annotated_observation))]
-    poss_ptrs_next = [
-        [a, annotated_plan[a][annotated_observation[a][-1][2] + 1][1], annotated_observation[a][-1][2] + 1] if
-        annotated_observation[a][-1][2] + 1 < len(annotated_plan[a]) else [a, [-1, -1], -1] for a in
-        range(len(annotated_observation))]
-
     # while the failure detector didnt detect failure and while there are agents that didnt finish their plans
-    while not detector(annotated_plan, annotated_observation, poss_ptrs_prev, poss_ptrs_curr, poss_ptrs_next) \
-            and not all_goals_reached(annotated_plan, annotated_observation):
+    while wall_clock <= failure_wall_clock_time and not all_goals_reached(annotated_plan, annotated_observation):
 
         # append a slice to timespace and copy the current positions of the agents there
         time_expansion_graph.append([[-1 for _x in range(board_size[1])] for _y in range(board_size[0])])
@@ -257,8 +243,6 @@ def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_det
                 spdchgtab[a].append(speed_change)
             else:
                 spdchgtab[a].append(0)
-        # advance the wall clock
-        wall_clock += 1
 
         # sort the rest of the agents by their speed this round, second level sort is by the agents id numbers
         speeds = [spdchgtab[a][-1] for a in yta1]
@@ -286,14 +270,8 @@ def calculate_counterfactual(board_size, plan, faults_tab_W_minus_E, failure_det
                  copy.deepcopy(annotated_plan[a][new_plan_pointer][1]),
                  new_plan_pointer,
                  wall_clock - new_plan_pointer])
+        # advance the wall clock
+        wall_clock += 1
         # print([annotated_observation[a][-1] for a in range(len(annotated_observation))])
         # print(77)
-        # extract lists of previous, current and next timed positions for failure detection
-        poss_ptrs_prev = copy.deepcopy(poss_ptrs_curr)
-        poss_ptrs_curr = [[a, annotated_observation[a][-1][1], annotated_observation[a][-1][2]] for a in
-                          range(len(annotated_observation))]
-        poss_ptrs_next = [
-            [a, annotated_plan[a][annotated_observation[a][-1][2] + 1][1], annotated_observation[a][-1][2] + 1] if
-            annotated_observation[a][-1][2] + 1 < len(annotated_plan[a]) else [a, [-1, -1], -1] for a in
-            range(len(annotated_observation))]
     return annotated_observation
