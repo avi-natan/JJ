@@ -3,6 +3,8 @@ import ast
 import random
 from datetime import datetime
 
+import xlsxwriter
+
 import diagnoser2
 import helper
 import planner_simple
@@ -47,7 +49,10 @@ def runExperimentBundle(filename):
         * len(failure_detectors) * len(cost_functions) * len(diagnosis_generation_methods) * repeats_number
     instance_number = 1
 
-    # create instances
+    # create an empty results list for instances
+    results = []
+
+    # create instances and solve them, insert the results in the results list
     for bs in board_sizes:
         for pl in plan_lengths:
             for an in agent_nums:
@@ -115,14 +120,61 @@ def runExperimentBundle(filename):
                                                 simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                              instance_number, total_instances)
                                         helper.print_matrix(annotated_observation)
-                                        # advance instance number by 1
-                                        instance_number += 1
 
                                         for cf in cost_functions:
                                             # diagnose
-                                            res = diagnoser2.diagnose(bs, plan, annotated_observation, cf,
-                                                                      diagnosis_generation_methods, fd)
-                                            print(9)
+                                            # todo this is not the final result, its only
+                                            # todo the shapley value! continue in the diagnoser2 file
+                                            shapley_gold, runtime_gold = \
+                                                diagnoser2.diagnose(bs, plan, annotated_observation, cf,
+                                                                    diagnosis_generation_methods, fd)
+                                            # create a result row and append it to reults
+                                            result_row = [
+                                                str(bs),
+                                                pl,
+                                                an,
+                                                '\r\n'.join(list(map(lambda pln: str(pln), plan))),
+                                                fan,
+                                                str(F),
+                                                fp,
+                                                fsr,
+                                                ft,
+                                                fd,
+                                                rn+1,
+                                                instance_number,
+                                                cf,
+                                                '\r\n'.join(list(map(lambda rs: str(rs), shapley_gold))),
+                                                runtime_gold
+                                            ]
+                                            results.append(result_row)
+
+                                        # advance instance number by 1
+                                        instance_number += 1
+    print(9)
+    columns = [
+        {'header': 'board_size'},
+        {'header': 'plan_length'},
+        {'header': 'agent_number'},
+        {'header': 'plan'},
+        {'header': 'faulty_agents_number'},
+        {'header': 'faulty_agents_set'},
+        {'header': 'fault_probability'},
+        {'header': 'fault_speed_range'},
+        {'header': 'fault_type'},
+        {'header': 'failure_detector'},
+        {'header': 'repeat_number'},
+        {'header': 'instance_number'},
+        {'header': 'cost_function'},
+        {'header': 'shapley_gold'},
+        {'header': 'runtime_gold'}
+    ]
+    # write the data to xlsx file
+    workbook = xlsxwriter.Workbook('results.xlsx')
+    worksheet = workbook.add_worksheet('results')
+    worksheet.add_table(0, 0, len(results), len(columns) - 1, {'data': results, 'columns': columns})
+    workbook.close()
+    print(f'results collected')
+
 
 
 

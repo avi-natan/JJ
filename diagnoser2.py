@@ -1,5 +1,6 @@
 import copy
 import math
+from datetime import datetime
 
 import cost_functions
 import helper
@@ -119,6 +120,9 @@ def extract_certain_faults(plan, observation):
 
 
 def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_detector):
+    # time logging
+    start_time = datetime.now()
+
     # calculate the gold standard, which is the shapley value
     # for each of the fault events in W giver a cost function
     # get a list of the subsets of the list
@@ -156,7 +160,11 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     for i, sgn in enumerate(shapley_gold_normalized):
         sgn[1] = normalized_values[i]
 
-    return shapley_gold_normalized
+    # time logging
+    end_time = datetime.now()
+    runtime = end_time - start_time
+
+    return shapley_gold_normalized, runtime
 
 
 def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_methods, failure_detector):
@@ -175,11 +183,11 @@ def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_
     print(len(W))
 
     # calculate gold standard shapley values for the faulty events w in W
-    shapley_gold = calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_detector)
+    shapley_gold, runtime_gold = calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_detector)
 
     print(9)
     # for each of the diagnosis generation methods, input the same input as the
     # gold standard and then calculate an additive shapley values - i.e., for every
     # set of diagnoses (cardinality, tempral, etc) calculate the shapley value until then
     # todo continue
-    return shapley_gold
+    return shapley_gold, runtime_gold

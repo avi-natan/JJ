@@ -111,10 +111,10 @@
 ;; the minimum number of the total agents
 board_sizes:[[5,6]]
 plan_lengths:[8]
-agent_nums:[8]
-faulty_agent_nums:[4]
+agent_nums:[3]
+faulty_agent_nums:[2]
 fault_probabilities:[0.8]
-fault_speed_ranges:[2]
+fault_speed_ranges:[2,3]
 fault_types:['both']
 failure_detectors:['fd_stuck']
 cost_functions:['cost_max_offset']
