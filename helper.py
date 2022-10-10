@@ -1,6 +1,8 @@
 import copy
 from itertools import combinations
 
+import numpy
+
 
 def print_matrix(matrix):
     s = [[str(e) for e in row] for row in matrix]
@@ -165,3 +167,10 @@ def equivalent_sets(set1, set2):
         if i not in set1:
             return False
     return True
+
+
+def euclidean_distance(brd_values, shg_values):
+    np_brd_values = numpy.array(brd_values)
+    np_shg_values = numpy.array(shg_values)
+    distance = numpy.linalg.norm(np_brd_values-np_shg_values)
+    return distance

@@ -279,10 +279,17 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     for dgm in diagnosis_generation_methods:
         result_dgm = calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, dgm)
         results_dgm.append(result_dgm)
-    print(9)
 
     # for each of the dgm results (foreach method there are the batch results) calcualte
     # the euclidean distance between the aggregated shapley value of the result to the
     # shapley value of the gold standard
+    shg_values = [item[1] for item in shapley_gold]
+    for rd in results_dgm:
+        for batch in rd:
+            brd_values = [item[1] for item in batch[1]]
+            distance = helper.euclidean_distance(brd_values, shg_values)
+            batch.insert(1, distance)
+    # finalize the dgm resuts and prepare them for output of this function
     # todo
+    print(9)
     return shapley_gold, runtime_gold

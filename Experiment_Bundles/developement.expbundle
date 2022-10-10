@@ -116,7 +116,7 @@ faulty_agent_nums:[2]
 fault_probabilities:[0.8]
 fault_speed_ranges:[2,3]
 fault_types:['both']
-failure_detectors:['fd_max_offset-3']
+failure_detectors:['fd_max_offset-4']
 cost_functions:['cost_max_offset']
 diagnosis_generation_methods:['dgm_cardi_asc_tempo_rnd']
 repeats_number:20
