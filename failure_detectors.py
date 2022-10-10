@@ -73,7 +73,6 @@ def make_detector_max_offset(threshold):
 
 def make_detector(failure_detector):
     if failure_detector[:9] == 'fd_max_of':
-        # todo implement
         print('fd_max_offset')
         print(f'threshold: {failure_detector[14:]}')
         detector_max_offset = make_detector_max_offset(int(failure_detector[14:]))
@@ -82,16 +81,16 @@ def make_detector(failure_detector):
         # todo implement
         print('fd_sum_offset')
         print(f'threshold: {failure_detector[14:]}')
-        return detector_stuck
+        return None
     elif failure_detector[:9] == 'fd_max_at':
         # todo implement
         print('fd_max_at_location')
         print(f'threshold: {failure_detector[19:]}')
-        return detector_stuck
+        return None
     elif failure_detector[:9] == 'fd_sum_at':
         # todo implement
         print('fd_sum_at_location')
         print(f'threshold: {failure_detector[19:]}')
-        return detector_stuck
+        return None
     else:   # failure_detector == 'fd_stuck':
         return detector_stuck

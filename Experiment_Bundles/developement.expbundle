@@ -79,9 +79,9 @@
 ;;		  by ascending cardinaity and descending temporality
 ;;		- 'dgm_cardi_asc_tempo_asc': generate diagnoses
 ;;		  by ascending cardinaity and ascending temporality
-;;		- 'dgm_cardi_dsc_tempo_dsc': generate diagnoses
+;;		- 'dgm_tempo_dsc_cardi_asc': generate diagnoses
 ;;		  by descending cardinaity and descending temporality
-;;		- 'dgm_cardi_dsc_tempo_asc': generate diagnoses
+;;		- 'dgm_tempo_asc_cardi_asc': generate diagnoses
 ;;		  by descending cardinaity and ascending temporality
 ;;
 ;; repeats_number: number, determins how many

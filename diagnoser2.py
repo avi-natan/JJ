@@ -3,6 +3,8 @@ import math
 from datetime import datetime
 
 import cost_functions
+import diagnosis_generators
+import failure_detectors
 import helper
 import simulator2
 
@@ -59,9 +61,10 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, s
             # create a faults table for W\S
             W_minus_S = helper.calculate_minus_set(W, S)
             if W_minus_S in seen:
+                print(f'memoization: shapley')
                 cf_S = seen_cf[str(W_minus_S)]
             else:
-                print(f'{W_minus_S}')
+                print(f'saving at shapley {W_minus_S}')
                 faults_tab_W_minus_S = create_faults_table(W_minus_S, len(plan))
                 cf_S = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_S, failure_wall_clock_time)
                 seen.append(W_minus_S)
@@ -74,9 +77,10 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, s
             # create a faults table for W\(Suw)
             W_minus_Suw = helper.calculate_minus_set(W, Suw)
             if W_minus_Suw in seen:
+                print(f'memoization: shapley')
                 cf_Suw = seen_cf[str(W_minus_Suw)]
             else:
-                print(f'{W_minus_Suw}')
+                print(f'saving at shapley {W_minus_Suw}')
                 faults_tab_W_minus_Suw = create_faults_table(W_minus_Suw, len(plan))
                 cf_Suw = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_Suw, failure_wall_clock_time)
                 seen.append(W_minus_Suw)
@@ -176,7 +180,81 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     return shapley_gold_normalized, runtime
 
 
-def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_methods, failure_wall_clock_time):
+def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, dgm):
+    # todo implement
+
+    # make the failure detector
+    detector = failure_detectors.make_detector(failure_detector)
+
+    # generate the subsets of W
+    subsets_W = helper.subsets(W)[1:]
+
+    # make a diagnosis generator
+    diagnosis_generator = diagnosis_generators.make_diagnosis_generator(dgm)
+
+    # sort the subsets according to the diagnosis generator
+    sorted_subsets_W = diagnosis_generator(subsets_W)
+
+    # initialize memorization data structures
+    seen = []
+    seen_cf = {}
+
+    # initialize a diagnoses datastructure
+    sorted_diagnoses = []
+    # for every batch of the sorted subsets do:
+    for batch in sorted_subsets_W:
+        # initialize a diagnosis batch. set the order number (cardinality, time step, etc)
+        diagnosis_batch = [batch[0], []]
+        # for each subset in the current subset batch do:
+        for S in batch[1]:
+            # calculate the minus set
+            W_minus_S = helper.calculate_minus_set(W, S)
+            # retreive the counterfactual, either from memory or by generating it
+            if W_minus_S in seen:
+                print(f'memoization: calculate_shapley_using_dgm')
+                cf_S = seen_cf[str(W_minus_S)]
+            else:
+                print(f'saving at calculate_shapley_using_dgm {W_minus_S}')
+                faults_tab_W_minus_S = create_faults_table(W_minus_S, len(plan))
+                cf_S = simulator2.calculate_counterfactual(board_size, plan, faults_tab_W_minus_S, failure_wall_clock_time)
+                seen.append(W_minus_S)
+                seen_cf[str(W_minus_S)] = cf_S
+            # if the counterfactual is not failing then S is a diagnosis
+            if not detector([], cf_S, [], [], []):
+                # calculate shapley values for S
+                shapley_S = shapley(board_size, plan, failure_wall_clock_time, S, cost_function, seen, seen_cf)
+                # normalize the shpley values for S
+                values_list = list(map(lambda item: item[1], shapley_S))
+                normalized_values = helper.normalize_values_list(values_list)
+                shapley_S_normalized = copy.deepcopy(shapley_S)
+                for i, ssn in enumerate(shapley_S_normalized):
+                    ssn[1] = normalized_values[i]
+                # inset S into the diagnosis batch together with its shapley value
+                diagnosis_batch[1].append([S, shapley_S_normalized])
+        # calculate the aggregated shapley value until this point
+        aggregated = [[fe, 0.0] for fe in W]
+        for agg in aggregated:
+            fe = agg[0]
+            for sd in sorted_diagnoses:
+                for dg in sd[2]:
+                    if fe in dg[0]:
+                        sh_d_fe = list(filter(lambda f: f[0] == fe, dg[1]))[0][1]
+                        agg[1] = agg[1] + sh_d_fe
+            for dg in diagnosis_batch[1]:
+                if fe in dg[0]:
+                    sh_d_fe = list(filter(lambda f: f[0] == fe, dg[1]))[0][1]
+                    agg[1] = agg[1] + sh_d_fe
+        # normalize the aggregted shapley values
+        values_list = list(map(lambda item: item[1], aggregated))
+        normalized_values = helper.normalize_values_list(values_list)
+        aggregated_normalized = copy.deepcopy(aggregated)
+        for i, an in enumerate(aggregated_normalized):
+            an[1] = normalized_values[i]
+        # finally insert the current diagnosis batch into the diagnoses datastructure
+        sorted_diagnoses.append([diagnosis_batch[0], aggregated_normalized, diagnosis_batch[1]])
+    return sorted_diagnoses
+
+def diagnose(board_size, plan, observation, cost_function, failure_detector, diagnosis_generation_methods, failure_wall_clock_time):
     # logging
     print(f'######################## diagnosing ########################')
     print(f'plan:')
@@ -194,9 +272,17 @@ def diagnose(board_size, plan, observation, cost_function, diagnosis_generation_
     # calculate gold standard shapley values for the faulty events w in W
     shapley_gold, runtime_gold = calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_wall_clock_time)
 
-    print(9)
     # for each of the diagnosis generation methods, input the same input as the
     # gold standard and then calculate an additive shapley values - i.e., for every
     # set of diagnoses (cardinality, tempral, etc) calculate the shapley value until then
-    # todo continue
+    results_dgm = []
+    for dgm in diagnosis_generation_methods:
+        result_dgm = calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, dgm)
+        results_dgm.append(result_dgm)
+    print(9)
+
+    # for each of the dgm results (foreach method there are the batch results) calcualte
+    # the euclidean distance between the aggregated shapley value of the result to the
+    # shapley value of the gold standard
+    # todo
     return shapley_gold, runtime_gold

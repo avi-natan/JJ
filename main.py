@@ -129,7 +129,7 @@ def runExperimentBundle(filename):
                                             # todo this is not the final result, its only
                                             # todo the shapley value! continue in the diagnoser2 file
                                             shapley_gold, runtime_gold = \
-                                                diagnoser2.diagnose(bs, plan, annotated_observation, cf,
+                                                diagnoser2.diagnose(bs, plan, annotated_observation, cf, fd,
                                                                     diagnosis_generation_methods, failure_wall_clock_time)
                                             # create a result row and append it to reults
                                             result_row = [
