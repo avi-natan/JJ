@@ -1,4 +1,4 @@
-def dgm_cardi_asc_tempo_rnd(subsets):
+def dgm_cardi_asc(subsets, failure_wall_clock_time):
     # no sorting here
 
     # divide to batches
@@ -11,23 +11,32 @@ def dgm_cardi_asc_tempo_rnd(subsets):
         sorted_batches.append(batch_c)
     return sorted_batches
 
+def dgm_tempo_dsc(subsets, failure_wall_clock_time):
+    sorted_batches = []
+    min_t = 0
+    max_t = failure_wall_clock_time
+    seen = []
+    for t in range(max_t, min_t, -1):
+        print(t)
+        batch_t = [t, []]
+        for s in subsets:
+            if s not in seen:
+                if t <= min([fa[1] for fa in s]):
+                    batch_t[1].append(s)
+                    seen.append(s)
+        sorted_batches.append(batch_t)
+    return sorted_batches
+
 def make_diagnosis_generator(diagnosis_generator_method):
-    dgm_splitted = diagnosis_generator_method.split('_')
-    if dgm_splitted[1] == 'cardi' and dgm_splitted[4] == 'dsc':
-        print('dgm_cardi_asc_tempo_dsc')
-        return None
-    elif dgm_splitted[1] == 'cardi' and dgm_splitted[4] == 'asc':
-        # todo implement
-        print('dgm_cardi_asc_tempo_asc')
-        return None
-    elif dgm_splitted[1] == 'tempo' and dgm_splitted[2] == 'dsc':
-        # todo implement
-        print('dgm_tempo_dsc_cardi_asc')
-        return None
-    elif dgm_splitted[1] == 'tempo' and dgm_splitted[2] == 'asc':
-        # todo implement
-        print('cost_sum_at_location')
-        return None
-    else:   # diagnosis_generator_method == 'dgm_cardi_asc_tempo_rnd':
-        print('dgm_cardi_asc_tempo_rnd')
-        return dgm_cardi_asc_tempo_rnd
+    if diagnosis_generator_method == 'dgm_cardi_asc':
+        print('dgm_cardi_asc')
+        return dgm_cardi_asc
+    elif diagnosis_generator_method == 'dgm_tempo_dsc':
+        print('dgm_tempo_dsc')
+        return dgm_tempo_dsc
+    elif diagnosis_generator_method == 'dgm_tempo_asc':
+        print('dgm_tempo_asc')
+        return dgm_tempo_asc
+    else:       # raise error
+        print('error: unexected diagnosis generator method')
+        raise Exception("unexected diagnosis generator method")

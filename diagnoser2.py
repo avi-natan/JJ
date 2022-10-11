@@ -181,8 +181,6 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
 
 
 def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, dgm):
-    # todo implement
-
     # make the failure detector
     detector = failure_detectors.make_detector(failure_detector)
 
@@ -193,7 +191,7 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
     diagnosis_generator = diagnosis_generators.make_diagnosis_generator(dgm)
 
     # sort the subsets according to the diagnosis generator
-    sorted_subsets_W = diagnosis_generator(subsets_W)
+    sorted_subsets_W = diagnosis_generator(subsets_W, failure_wall_clock_time)
 
     # initialize memorization data structures
     seen = []
@@ -278,14 +276,14 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     results_dgm = []
     for dgm in diagnosis_generation_methods:
         result_dgm = calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, dgm)
-        results_dgm.append(result_dgm)
+        results_dgm.append([dgm, result_dgm])
 
     # for each of the dgm results (foreach method there are the batch results) calcualte
     # the euclidean distance between the aggregated shapley value of the result to the
     # shapley value of the gold standard
     shg_values = [item[1] for item in shapley_gold]
     for rd in results_dgm:
-        for batch in rd:
+        for batch in rd[1]:
             brd_values = [item[1] for item in batch[1]]
             distance = helper.euclidean_distance(brd_values, shg_values)
             batch.insert(1, distance)

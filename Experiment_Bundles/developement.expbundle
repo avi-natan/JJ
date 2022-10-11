@@ -73,16 +73,9 @@
 ;; diagnosis_generation_methods: array, filled with
 ;; different methods for generating diagnoses.
 ;; options are:
-;;		- 'dgm_cardi_asc_tempo_rnd': generate diagnoses
-;;		  by ascending cardinaity and random temporality
-;;		- 'dgm_cardi_asc_tempo_dsc': generate diagnoses
-;;		  by ascending cardinaity and descending temporality
-;;		- 'dgm_cardi_asc_tempo_asc': generate diagnoses
-;;		  by ascending cardinaity and ascending temporality
-;;		- 'dgm_tempo_dsc_cardi_asc': generate diagnoses
-;;		  by descending cardinaity and descending temporality
-;;		- 'dgm_tempo_asc_cardi_asc': generate diagnoses
-;;		  by descending cardinaity and ascending temporality
+;;		- 'dgm_cardi_asc': generate diagnoses by ascending cardinaity
+;;		- 'dgm_tempo_dsc': generate diagnoses descending temporality
+;;		- 'dgm_tempo_asc': generate diagnoses ascending temporality
 ;;
 ;; repeats_number: number, determins how many
 ;; repeats of each setting to run
@@ -101,7 +94,7 @@
 ;; fault_types:['slower','both']
 ;; failure_detectors:['fd_stuck','fd_max_offset-2']
 ;; cost_functions:['cost_stuck','cost_max_offset']
-;; diagnosis_generation_methods:['dgm_cardi_asc_tempo_rnd']
+;; diagnosis_generation_methods:['dgm_cardi_asc']
 ;; repeats_number:10
 ;; the total number of instances will be:
 ;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 2 x 1 x 10 = 1280
@@ -118,5 +111,5 @@ fault_speed_ranges:[2,3]
 fault_types:['both']
 failure_detectors:['fd_max_offset-4']
 cost_functions:['cost_max_offset']
-diagnosis_generation_methods:['dgm_cardi_asc_tempo_rnd']
+diagnosis_generation_methods:['dgm_cardi_asc','dgm_tempo_dsc']
 repeats_number:20
