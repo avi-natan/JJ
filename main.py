@@ -52,6 +52,12 @@ def runExperimentBundle(filename):
     # create an empty results list for instances
     results = []
 
+    # prepare the counters of the maximum orders for different diagnosis generation methods
+    # it will be used to fill in missing result rows
+    max_orders = {}
+    for dgm in diagnosis_generation_methods:
+        max_orders[dgm] = 0
+
     # create instances and solve them, insert the results in the results list
     for bs in board_sizes:
         for pl in plan_lengths:
@@ -122,17 +128,15 @@ def runExperimentBundle(filename):
                                         helper.print_matrix(annotated_observation)
                                         failure_wall_clock_time = max([annotated_observation[a][-1][0]
                                                                        for a in range(len(annotated_observation))])
-                                        print(9)
 
                                         for cf in cost_functions:
                                             # diagnose
-                                            # todo this is not the final result, its only
-                                            # todo the shapley value! continue in the diagnoser2 file
-                                            shapley_gold, runtime_gold = \
+                                            # todo implement the writing of runtime and of the other dgm methods
+                                            results_dgm = \
                                                 diagnoser2.diagnose(bs, plan, annotated_observation, cf, fd,
                                                                     diagnosis_generation_methods, failure_wall_clock_time)
-                                            # create a result row and append it to reults
-                                            result_row = [
+                                            # save the results datastructure for this dgm in the results list
+                                            results.append([
                                                 str(bs),
                                                 pl,
                                                 an,
@@ -143,17 +147,60 @@ def runExperimentBundle(filename):
                                                 fsr,
                                                 ft,
                                                 fd,
-                                                rn+1,
+                                                rn + 1,
                                                 instance_number,
                                                 cf,
-                                                '\r\n'.join(list(map(lambda rs: str(rs), shapley_gold))),
-                                                runtime_gold
-                                            ]
-                                            results.append(result_row)
+                                                results_dgm])
 
-                                        # advance instance number by 1
-                                        instance_number += 1
-    print(9)
+                                            # update the maximum number of the orders
+                                            for row in results_dgm:
+                                                if row[0] != 'gold':
+                                                    max_orders[row[0]] = max(max_orders[row[0]], max([order[0] for order in row[1]]))
+
+                                            # advance instance number by 1
+                                            instance_number += 1
+
+    # fill in last results for intances that finished before
+    for result in results:
+        for dgm in result[13][1:]:
+            orders = [order[0] for order in dgm[1]]
+            if max(orders) < max_orders[dgm[0]]:
+                if orders[0] < orders[-1]:
+                    last = dgm[1][-1]
+                    for i in range(max(orders) + 1, max_orders[dgm[0]] + 1):
+                        dgm[1].append([i] + last[1:])
+                else:
+                    first = dgm[1][0]
+                    for i in range(max(orders) + 1, max_orders[dgm[0]] + 1):
+                        dgm[1].insert(0, [i] + first[1:])
+
+    # insert results into excel
+    excel_results = []
+    for result in results:
+        for dgm in result[13]:
+            for order in dgm[1]:
+                ex_res = [
+                    result[0],
+                    result[1],
+                    result[2],
+                    result[3],
+                    result[4],
+                    result[5],
+                    result[6],
+                    result[7],
+                    result[8],
+                    result[9],
+                    result[10],
+                    result[11],
+                    result[12],
+                    dgm[0],
+                    order[0],
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[3]))),
+                    order[1],
+                    order[2]
+                ]
+                excel_results.append(ex_res)
+
     columns = [
         {'header': 'board_size'},
         {'header': 'plan_length'},
@@ -168,13 +215,16 @@ def runExperimentBundle(filename):
         {'header': 'repeat_number'},
         {'header': 'instance_number'},
         {'header': 'cost_function'},
-        {'header': 'shapley_gold'},
-        {'header': 'runtime_gold'}
+        {'header': 'dgm'},
+        {'header': 'order'},
+        {'header': 'shapley_value'},
+        {'header': 'distance'},
+        {'header': 'runtime'}
     ]
     # write the data to xlsx file
     workbook = xlsxwriter.Workbook('results.xlsx')
     worksheet = workbook.add_worksheet('results')
-    worksheet.add_table(0, 0, len(results), len(columns) - 1, {'data': results, 'columns': columns})
+    worksheet.add_table(0, 0, len(excel_results), len(columns) - 1, {'data': excel_results, 'columns': columns})
     workbook.close()
     print(f'results collected')
 
