@@ -1,7 +1,8 @@
 # Press the green button in the gutter to run the script.
 import ast
 import random
-from datetime import datetime
+# from datetime import datetime
+import time
 
 import xlsxwriter
 
@@ -44,7 +45,7 @@ def runExperimentBundle(filename):
     # calculate the total number of instances and initiate instance number
     total_instances = len(board_sizes) * len(plan_lengths) * len(agent_nums) * len(faulty_agents_nums) \
         * len(fault_probabilities) * len(fault_speed_ranges) * len(fault_types) \
-        * len(failure_detectors) * len(cost_functions) * len(diagnosis_generation_methods) * repeats_number
+        * len(failure_detectors) * len(cost_functions) * repeats_number
     instance_number = 1
 
     # create an empty results list for instances
@@ -118,18 +119,20 @@ def runExperimentBundle(filename):
                                         annotated_observation, spdchgtab, simulation_remake = \
                                             simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                          instance_number, total_instances)
-                                        while simulation_remake:
+                                        W = diagnoser2.extract_certain_faults(plan, annotated_observation)
+
+                                        while simulation_remake or len(W) > 10:
                                             print('simulation remake')
                                             annotated_observation, spdchgtab, simulation_remake = \
                                                 simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                              instance_number, total_instances)
+                                            W = diagnoser2.extract_certain_faults(plan, annotated_observation)
                                         helper.print_matrix(annotated_observation)
                                         failure_wall_clock_time = max([annotated_observation[a][-1][0]
                                                                        for a in range(len(annotated_observation))])
 
                                         for cf in cost_functions:
                                             # diagnose
-                                            # todo implement the writing of runtime and of the other dgm methods
                                             results_dgm = \
                                                 diagnoser2.diagnose(bs, plan, annotated_observation, cf, fd,
                                                                     diagnosis_generation_methods, failure_wall_clock_time)
@@ -155,8 +158,8 @@ def runExperimentBundle(filename):
                                                 if row[0] != 'gold':
                                                     max_orders[row[0]] = max(max_orders[row[0]], max([order[0] for order in row[1]]))
 
-                                            # advance instance number by 1
-                                            instance_number += 1
+                                        # advance instance number by 1
+                                        instance_number += 1
 
     # fill in last results for intances that finished before
     for result in results:
@@ -193,9 +196,9 @@ def runExperimentBundle(filename):
                     result[12],
                     dgm[0],
                     order[0],
-                    '\r\n'.join(list(map(lambda rs: str(rs), order[3]))),
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[2]))),
                     order[1],
-                    order[2]
+                    order[3]
                 ]
                 excel_results.append(ex_res)
 
@@ -229,13 +232,15 @@ def runExperimentBundle(filename):
 
 if __name__ == '__main__':
     print('Hi, JonJon pipeline!')
-    start_time = datetime.now()
+    # start_time = datetime.now()
+    start_time = time.time()
 
     runPaperExperiment()
     runExperimentBundle("developement.expbundle")
 
-    end_time = datetime.now()
+    # end_time = datetime.now()
+    end_time = time.time()
     delta = end_time - start_time
-    print(f'time to finish: {delta}')
+    print(f'time to finish in seconds: {delta}')
 
     print(f'Bye JonJon pipeline!')

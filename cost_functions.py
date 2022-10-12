@@ -3,7 +3,7 @@ def cost_max_offset(cf):
 
 def make_cost_function(cost_function):
     if cost_function[:11] == 'cost_max_of':
-        print('cost_max_offset')
+        # print('cost_max_offset')
         return cost_max_offset
     elif cost_function[:11] == 'cost_sum_of':
         # todo implement

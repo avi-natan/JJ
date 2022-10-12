@@ -102,7 +102,6 @@ def cut_execution(plan, execution, plan_step, plan_offset, spdchgtab, fth):
         new_spdchgtab.append(copy.deepcopy(i[:cut_time]))
 
     # cut out cells of timesteps that their global timer in the plan step table exceeds the new last plans
-    print(9)
     for i in range(len(new_plan_step)):
         while new_plan_step[i][-1] >= len(new_plan[i]):
             new_execution[i] = new_execution[i][:-1]

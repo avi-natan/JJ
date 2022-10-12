@@ -17,7 +17,7 @@ def dgm_tempo_dsc(subsets, failure_wall_clock_time):
     max_t = failure_wall_clock_time
     seen = []
     for t in range(max_t, min_t, -1):
-        print(t)
+        # print(t)
         batch_t = [t, []]
         for s in subsets:
             if s not in seen:
@@ -33,7 +33,7 @@ def dgm_tempo_asc(subsets, failure_wall_clock_time):
     max_t = failure_wall_clock_time
     seen = []
     for t in range(min_t, max_t+1, 1):
-        print(t)
+        # print(t)
         batch_t = [t, []]
         for s in subsets:
             if s not in seen:
@@ -45,13 +45,13 @@ def dgm_tempo_asc(subsets, failure_wall_clock_time):
 
 def make_diagnosis_generator(diagnosis_generator_method):
     if diagnosis_generator_method == 'dgm_cardi_asc':
-        print('dgm_cardi_asc')
+        # print('dgm_cardi_asc')
         return dgm_cardi_asc
     elif diagnosis_generator_method == 'dgm_tempo_dsc':
-        print('dgm_tempo_dsc')
+        # print('dgm_tempo_dsc')
         return dgm_tempo_dsc
     elif diagnosis_generator_method == 'dgm_tempo_asc':
-        print('dgm_tempo_asc')
+        # print('dgm_tempo_asc')
         return dgm_tempo_asc
     else:       # raise error
         print('error: unexected diagnosis generator method')
