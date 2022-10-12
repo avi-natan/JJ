@@ -27,6 +27,22 @@ def dgm_tempo_dsc(subsets, failure_wall_clock_time):
         sorted_batches.append(batch_t)
     return sorted_batches
 
+def dgm_tempo_asc(subsets, failure_wall_clock_time):
+    sorted_batches = []
+    min_t = 0
+    max_t = failure_wall_clock_time
+    seen = []
+    for t in range(min_t, max_t+1, 1):
+        print(t)
+        batch_t = [t, []]
+        for s in subsets:
+            if s not in seen:
+                if t >= max([fa[1] for fa in s]):
+                    batch_t[1].append(s)
+                    seen.append(s)
+        sorted_batches.append(batch_t)
+    return sorted_batches
+
 def make_diagnosis_generator(diagnosis_generator_method):
     if diagnosis_generator_method == 'dgm_cardi_asc':
         print('dgm_cardi_asc')

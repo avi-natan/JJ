@@ -8,10 +8,8 @@ import xlsxwriter
 import diagnoser2
 import helper
 import planner_simple
-import simulator
 import simulator2
 import visualizer
-import diagnoser
 
 
 def read_experiment_bundle(filename):
@@ -227,8 +225,6 @@ def runExperimentBundle(filename):
     worksheet.add_table(0, 0, len(excel_results), len(columns) - 1, {'data': excel_results, 'columns': columns})
     workbook.close()
     print(f'results collected')
-
-
 
 
 if __name__ == '__main__':
