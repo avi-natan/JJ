@@ -236,7 +236,7 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
         for agg in aggregated:
             fe = agg[0]
             for sd in sorted_diagnoses:
-                for dg in sd[3]:
+                for dg in sd[4]:
                     if fe in dg[0]:
                         sh_d_fe = list(filter(lambda f: f[0] == fe, dg[1]))[0][1]
                         agg[1] = agg[1] + sh_d_fe
@@ -252,10 +252,10 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
             an[1] = normalized_values[i]
         # finally insert the current diagnosis batch into the diagnoses datastructure
         if len(sorted_diagnoses) > 0:
-            sorted_diagnoses.append([diagnosis_batch[0], aggregated_normalized, diagnosis_batch[1] + sorted_diagnoses[-1][2], diagnosis_batch[2]])
+            sorted_diagnoses.append([diagnosis_batch[0], aggregated_normalized, diagnosis_batch[1], diagnosis_batch[1] + sorted_diagnoses[-1][2], diagnosis_batch[2]])
         else:
             sorted_diagnoses.append(
-                [diagnosis_batch[0], aggregated_normalized, diagnosis_batch[1], diagnosis_batch[2]])
+                [diagnosis_batch[0], aggregated_normalized, diagnosis_batch[1], diagnosis_batch[1], diagnosis_batch[2]])
     return sorted_diagnoses
 
 def diagnose(board_size, plan, observation, cost_function, failure_detector, diagnosis_generation_methods, failure_wall_clock_time):
@@ -303,5 +303,5 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
             batch.insert(1, distance)
             # batch.insert(2, -1)
     # finalize the dgm resuts and prepare them for output of this function
-    results_dgm.insert(0, ['gold', [[0, 0, shapley_gold, runtime_gold]]])
+    results_dgm.insert(0, ['gold', [[0, 0, shapley_gold, runtime_gold, runtime_gold]]])
     return results_dgm
