@@ -198,8 +198,7 @@ def runExperimentBundle(filename):
                     order[0],
                     '\r\n'.join(list(map(lambda rs: str(rs), order[2]))),
                     order[1],
-                    order[3],
-                    order[4]
+                    order[3]
                 ]
                 excel_results.append(ex_res)
 
@@ -221,8 +220,7 @@ def runExperimentBundle(filename):
         {'header': 'order'},
         {'header': 'shapley_value'},
         {'header': 'distance'},
-        {'header': 'runtime order'},
-        {'header': 'runtime cummulated'}
+        {'header': 'runtime'}
     ]
     # write the data to xlsx file
     workbook = xlsxwriter.Workbook('results.xlsx')
