@@ -196,9 +196,9 @@ def runExperimentBundle(filename):
                     result[12],
                     dgm[0],
                     order[0],
-                    '\r\n'.join(list(map(lambda rs: str(rs), order[2]))),
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[3]))),
                     order[1],
-                    order[3]
+                    order[2]
                 ]
                 excel_results.append(ex_res)
 
