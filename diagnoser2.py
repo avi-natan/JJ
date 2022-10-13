@@ -200,7 +200,7 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
     for batch in sorted_subsets_W:
         # initialize a diagnosis batch. set the order number (cardinality, time step, etc) and the runtime of the
         # diagnoses ordering (its an overhead)
-        diagnosis_batch = [batch[0], 0, []]
+        diagnosis_batch = [batch[0], len(batch[1]), delta_sorting, []]
         # for each subset in the current subset batch do:
         for S in batch[1]:
             # calculate the minus set
@@ -222,7 +222,7 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
                 shapley_S = shapley(board_size, plan, failure_wall_clock_time, S, cost_function, seen, seen_cf)
                 S_end = time.time()
                 delta_S = S_end - S_start
-                diagnosis_batch[1] = diagnosis_batch[1] + delta_S
+                diagnosis_batch[2] = diagnosis_batch[2] + delta_S
                 # normalize the shpley values for S
                 values_list = list(map(lambda item: item[1], shapley_S))
                 normalized_values = helper.normalize_values_list(values_list)
@@ -230,17 +230,17 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
                 for i, ssn in enumerate(shapley_S_normalized):
                     ssn[1] = normalized_values[i]
                 # inset S into the diagnosis batch together with its shapley value
-                diagnosis_batch[2].append([S, shapley_S_normalized])
+                diagnosis_batch[3].append([S, shapley_S_normalized])
         # calculate the aggregated shapley value until this point
         aggregated = [[fe, 0.0] for fe in W]
         for agg in aggregated:
             fe = agg[0]
             for sd in sorted_diagnoses:
-                for dg in sd[4]:
+                for dg in sd[5]:
                     if fe in dg[0]:
                         sh_d_fe = list(filter(lambda f: f[0] == fe, dg[1]))[0][1]
                         agg[1] = agg[1] + sh_d_fe
-            for dg in diagnosis_batch[2]:
+            for dg in diagnosis_batch[3]:
                 if fe in dg[0]:
                     sh_d_fe = list(filter(lambda f: f[0] == fe, dg[1]))[0][1]
                     agg[1] = agg[1] + sh_d_fe
@@ -253,10 +253,10 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
         # finally insert the current diagnosis batch into the diagnoses datastructure
         if len(sorted_diagnoses) > 0:
             sorted_diagnoses.append(
-                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[1] + sorted_diagnoses[-1][2], aggregated_normalized, diagnosis_batch[2]])
+                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[2], diagnosis_batch[2] + sorted_diagnoses[-1][3], aggregated_normalized, diagnosis_batch[3]])
         else:
             sorted_diagnoses.append(
-                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[1], aggregated_normalized, diagnosis_batch[2]])
+                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[2], diagnosis_batch[2], aggregated_normalized, diagnosis_batch[3]])
     return sorted_diagnoses
 
 def diagnose(board_size, plan, observation, cost_function, failure_detector, diagnosis_generation_methods, failure_wall_clock_time):
@@ -299,10 +299,10 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     shg_values = [item[1] for item in shapley_gold]
     for rd in results_dgm:
         for batch in rd[1]:
-            brd_values = [item[1] for item in batch[3]]
+            brd_values = [item[1] for item in batch[4]]
             distance = helper.euclidean_distance(brd_values, shg_values)
             batch.insert(1, distance)
             # batch.insert(2, -1)
     # finalize the dgm resuts and prepare them for output of this function
-    results_dgm.insert(0, ['gold', [[0, 0, runtime_gold, runtime_gold, shapley_gold]]])
+    results_dgm.insert(0, ['gold', [[0, 0, 0, runtime_gold, runtime_gold, shapley_gold]]])
     return results_dgm
