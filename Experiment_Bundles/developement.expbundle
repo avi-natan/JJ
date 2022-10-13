@@ -112,4 +112,4 @@ fault_types:['both']
 failure_detectors:['fd_max_offset-4']
 cost_functions:['cost_max_offset']
 diagnosis_generation_methods:['dgm_cardi_asc','dgm_tempo_dsc','dgm_tempo_asc']
-repeats_number:20
+repeats_number:10
