@@ -13,12 +13,12 @@ def dgm_cardi_asc(subsets, failure_wall_clock_time):
 
 def dgm_tempo_dsc(subsets, failure_wall_clock_time):
     sorted_batches = []
-    min_t = 0
+    min_t = 1
     max_t = failure_wall_clock_time
     seen = []
-    for t in range(max_t, min_t, -1):
+    for t in range(max_t, min_t-1, -1):
         # print(t)
-        batch_t = [t, []]
+        batch_t = [max_t - t + 1, []]
         for s in subsets:
             if s not in seen:
                 if t <= min([fa[1] for fa in s]):
@@ -29,7 +29,7 @@ def dgm_tempo_dsc(subsets, failure_wall_clock_time):
 
 def dgm_tempo_asc(subsets, failure_wall_clock_time):
     sorted_batches = []
-    min_t = 0
+    min_t = 1
     max_t = failure_wall_clock_time
     seen = []
     for t in range(min_t, max_t+1, 1):
