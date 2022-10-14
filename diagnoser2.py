@@ -304,8 +304,9 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
             brd_values = [item[1] for item in batch[5]]
             distance = helper.euclidean_distance(brd_values, shg_values)
             batch.insert(1, distance)
+            batch.insert(1, len(W))
             # batch.insert(2, -1)
     # finalize the dgm resuts and prepare them for output of this function
-    # [name, [[batch number, distance, batch # diagnoses, comulated # diagnoses, batch runtime, commulated runtime, shapley value]]]
-    results_dgm.insert(0, ['gold', [[0, 0, 0, 0, runtime_gold, runtime_gold, shapley_gold]]])
+    # [name, [[batch number, # faulty events, distance, batch # diagnoses, comulated # diagnoses, batch runtime, commulated runtime, shapley value]]]
+    results_dgm.insert(0, ['gold', [[0, len(W), 0, 0, 0, runtime_gold, runtime_gold, shapley_gold]]])
     return results_dgm
