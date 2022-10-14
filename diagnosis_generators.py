@@ -43,6 +43,20 @@ def dgm_tempo_asc(subsets, failure_wall_clock_time):
         sorted_batches.append(batch_t)
     return sorted_batches
 
+def dgm_delay_dsc(subsets, failure_wall_clock_time):
+    # for each subset, calculate its delay sum
+    delays = [sum([fe[2] for fe in subset]) for subset in subsets]
+
+    # divide to batches
+    sorted_batches = []
+    max_delay = max(min(delays), 0)
+    min_delay = max(delays)
+    for d in range(max_delay, min_delay + 1):
+        # note, in the beginning the order is recorded (c for cardinality in this case)
+        batch_d = [d, [s for s in subsets if sum([fe[2] for fe in s]) == d]]
+        sorted_batches.append(batch_d)
+    return sorted_batches
+
 def make_diagnosis_generator(diagnosis_generator_method):
     if diagnosis_generator_method == 'dgm_cardi_asc':
         # print('dgm_cardi_asc')
@@ -53,6 +67,9 @@ def make_diagnosis_generator(diagnosis_generator_method):
     elif diagnosis_generator_method == 'dgm_tempo_asc':
         # print('dgm_tempo_asc')
         return dgm_tempo_asc
+    elif diagnosis_generator_method == 'dgm_delay_dsc':
+        # print('dgm_delay_dsc')
+        return dgm_delay_dsc
     else:       # raise error
         print('error: unexected diagnosis generator method')
         raise Exception("unexected diagnosis generator method")

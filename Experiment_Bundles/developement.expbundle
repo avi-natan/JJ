@@ -74,8 +74,9 @@
 ;; different methods for generating diagnoses.
 ;; options are:
 ;;		- 'dgm_cardi_asc': generate diagnoses by ascending cardinaity
-;;		- 'dgm_tempo_dsc': generate diagnoses descending temporality
-;;		- 'dgm_tempo_asc': generate diagnoses ascending temporality
+;;		- 'dgm_tempo_dsc': generate diagnoses by descending temporality
+;;		- 'dgm_tempo_asc': generate diagnoses by ascending temporality
+;;		- 'dgm_delay_dsc': generate diagnoses by descending delay sum
 ;;
 ;; repeats_number: number, determins how many
 ;; repeats of each setting to run
