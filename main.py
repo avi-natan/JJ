@@ -196,11 +196,12 @@ def runExperimentBundle(filename):
                     result[12],
                     dgm[0],
                     order[0],
-                    '\r\n'.join(list(map(lambda rs: str(rs), order[5]))),
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[6]))),
                     order[1],
                     order[2],
                     order[3],
-                    order[4]
+                    order[4],
+                    order[5]
                 ]
                 excel_results.append(ex_res)
 
@@ -223,6 +224,7 @@ def runExperimentBundle(filename):
         {'header': 'shapley_value'},
         {'header': 'distance'},
         {'header': 'batch # diagnoses'},
+        {'header': 'cumulated # diagnoses'},
         {'header': 'batch runtime'},
         {'header': 'cumulated runtime'}
     ]
