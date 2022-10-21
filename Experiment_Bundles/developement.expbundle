@@ -78,6 +78,9 @@
 ;;		- 'dgm_tempo_asc': generate diagnoses by ascending temporality
 ;;		- 'dgm_delay_dsc': generate diagnoses by descending delay sum
 ;;
+;; faulty_events_numbers: an array, filled with different
+;; demands for faulty events number to discover while running the simulation	
+;;
 ;; repeats_number: number, determins how many
 ;; repeats of each setting to run
 ;;
@@ -96,9 +99,10 @@
 ;; failure_detectors:['fd_stuck','fd_max_offset-2']
 ;; cost_functions:['cost_stuck','cost_max_offset']
 ;; diagnosis_generation_methods:['dgm_cardi_asc']
+;; faulty_events_numbers:[6,7]
 ;; repeats_number:10
 ;; the total number of instances will be:
-;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 2 x 1 x 10 = 1280
+;; 1 x 2 x 2 x 2 x 1 x 2 x 2 x 2 x 2 x 1 x 2 x 10 = 2560
 ;;
 ;; Important: the maximum number in the
 ;; array of the faulty agents cannot exceed
@@ -112,5 +116,6 @@ fault_speed_ranges:[3]
 fault_types:['both']
 failure_detectors:['fd_max_offset-4']
 cost_functions:['cost_max_offset']
+faulty_events_numbers:[11]
 diagnosis_generation_methods:['dgm_cardi_asc','dgm_tempo_dsc','dgm_tempo_asc']
-repeats_number:10
+repeats_number:20

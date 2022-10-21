@@ -26,10 +26,12 @@ def read_experiment_bundle(filename):
     fault_types = ast.literal_eval(lines[6][:-1].split(sep=':')[1])
     failure_detectors = ast.literal_eval(lines[7][:-1].split(sep=':')[1])
     cost_functions = ast.literal_eval(lines[8][:-1].split(sep=':')[1])
-    diagnosis_generation_methods = ast.literal_eval(lines[9][:-1].split(sep=':')[1])
-    repeats_number = int(lines[10][:-1].split(sep=':')[1])
+    faulty_events_numbers = ast.literal_eval(lines[9][:-1].split(sep=':')[1])
+    diagnosis_generation_methods = ast.literal_eval(lines[10][:-1].split(sep=':')[1])
+    repeats_number = int(lines[11][:-1].split(sep=':')[1])
     return board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
-        fault_types, failure_detectors, cost_functions, diagnosis_generation_methods, repeats_number
+        fault_types, failure_detectors, cost_functions, faulty_events_numbers, diagnosis_generation_methods, \
+        repeats_number
 
 
 def runPaperExperiment():
@@ -39,13 +41,13 @@ def runPaperExperiment():
 def runExperimentBundle(filename):
     # read parameters from file
     board_sizes, plan_lengths, agent_nums, faulty_agents_nums, fault_probabilities, fault_speed_ranges, \
-        fault_types, failure_detectors, cost_functions, diagnosis_generation_methods, repeats_number = \
-        read_experiment_bundle(filename)
+        fault_types, failure_detectors, cost_functions, faulty_events_numbers, diagnosis_generation_methods,\
+        repeats_number = read_experiment_bundle(filename)
 
     # calculate the total number of instances and initiate instance number
     total_instances = len(board_sizes) * len(plan_lengths) * len(agent_nums) * len(faulty_agents_nums) \
         * len(fault_probabilities) * len(fault_speed_ranges) * len(fault_types) \
-        * len(failure_detectors) * len(cost_functions) * repeats_number
+        * len(failure_detectors) * len(cost_functions) * len(faulty_events_numbers) * repeats_number
     instance_number = 1
 
     # create an empty results list for instances
@@ -72,7 +74,7 @@ def runExperimentBundle(filename):
                 """
                 plan, plan_remake = planner_simple.create_naiive_plan(bs, pl, an)
                 while plan_remake:
-                    print('plan remake')
+                    # print('plan remake')
                     plan, plan_remake = planner_simple.create_naiive_plan(bs, pl, an)
                 # visualizer.animate(bs[0], bs[1], plan, orientation='console')
                 visualizer.visualize(bs[0], bs[1], plan, orientation='console')
@@ -86,80 +88,86 @@ def runExperimentBundle(filename):
                         for fsr in fault_speed_ranges:
                             for ft in fault_types:
                                 for fd in failure_detectors:
-                                    for rn in range(repeats_number):
-                                        # execute the plans to get annotated observation
-                                        """
-                                        observation
-                                        o: A x T -> V is a mapping of agent a at time t to the location a occupied at time t.
+                                    for fen in faulty_events_numbers:
+                                        for rn in range(repeats_number):
+                                            # execute the plans to get annotated observation
+                                            """
+                                            observation
+                                            o: A x T -> V is a mapping of agent a at time t to the location a occupied at time t.
+                                            
+                                            plan step
+                                            tao: A x T -> T is a mapping between the wall clock time and the plan
+                                                 step for agent a.
+                                                 
+                                            plan offset
+                                            D_tao: A x T -> Z is defined as: t - tao(a,t).
+                                            
+                                            if no faults occur then:
+                                            1. tao(a,t) = t
+                                            2. o(a,t) = pi(a,t)
+                                            3. D_tao(a,t) = 0
+                                            
+                                            An annotated observation looks as follows:
+                                            obs = [agent obs]
+                                            agent obs = [temporal units]
+                                            temporal unit = [wall clock, position, plan step, plan offset]
+                                            position = [x coordinate, y coordinate]
                                         
-                                        plan step
-                                        tao: A x T -> T is a mapping between the wall clock time and the plan
-                                             step for agent a.
-                                             
-                                        plan offset
-                                        D_tao: A x T -> Z is defined as: t - tao(a,t).
-                                        
-                                        if no faults occur then:
-                                        1. tao(a,t) = t
-                                        2. o(a,t) = pi(a,t)
-                                        3. D_tao(a,t) = 0
-                                        
-                                        An annotated observation looks as follows:
-                                        obs = [agent obs]
-                                        agent obs = [temporal units]
-                                        temporal unit = [wall clock, position, plan step, plan offset]
-                                        position = [x coordinate, y coordinate]
-                                    
-                                        according to the document, it follows that:
-                                        t(a,t) = observation[a][t][0]
-                                        o(a,t) = observation[a][t][1]
-                                        tao(a,t) = observation[a][t][2]
-                                        D_tao(a,t) = observation[a][t][3]
-                                        """
-                                        annotated_observation, spdchgtab, simulation_remake = \
-                                            simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
-                                                                         instance_number, total_instances)
-                                        W = diagnoser2.extract_certain_faults(plan, annotated_observation)
-
-                                        while simulation_remake or len(W) > 10:
-                                            print('simulation remake')
+                                            according to the document, it follows that:
+                                            t(a,t) = observation[a][t][0]
+                                            o(a,t) = observation[a][t][1]
+                                            tao(a,t) = observation[a][t][2]
+                                            D_tao(a,t) = observation[a][t][3]
+                                            """
+                                            print(
+                                                f'######################## simulating instance {instance_number}/{total_instances} ########################')
                                             annotated_observation, spdchgtab, simulation_remake = \
                                                 simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                              instance_number, total_instances)
                                             W = diagnoser2.extract_certain_faults(plan, annotated_observation)
-                                        helper.print_matrix(annotated_observation)
-                                        failure_wall_clock_time = max([annotated_observation[a][-1][0]
-                                                                       for a in range(len(annotated_observation))])
 
-                                        for cf in cost_functions:
-                                            # diagnose
-                                            results_dgm = \
-                                                diagnoser2.diagnose(bs, plan, annotated_observation, cf, fd,
-                                                                    diagnosis_generation_methods, failure_wall_clock_time)
-                                            # save the results datastructure for this dgm in the results list
-                                            results.append([
-                                                str(bs),
-                                                pl,
-                                                an,
-                                                '\r\n'.join(list(map(lambda pln: str(pln), plan))),
-                                                fan,
-                                                str(F),
-                                                fp,
-                                                fsr,
-                                                ft,
-                                                fd,
-                                                rn + 1,
-                                                instance_number,
-                                                cf,
-                                                results_dgm])
+                                            while simulation_remake or len(W) != fen:
+                                                # print('simulation remake')
+                                                annotated_observation, spdchgtab, simulation_remake = \
+                                                    simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
+                                                                                 instance_number, total_instances)
+                                                W = diagnoser2.extract_certain_faults(plan, annotated_observation)
+                                            # print(f'plan:')
+                                            # helper.print_matrix(plan)
+                                            # print(f'observation:')
+                                            # helper.print_matrix(annotated_observation)
+                                            failure_wall_clock_time = max([annotated_observation[a][-1][0]
+                                                                           for a in range(len(annotated_observation))])
 
-                                            # update the maximum number of the orders
-                                            for row in results_dgm:
-                                                if row[0] != 'gold':
-                                                    max_orders[row[0]] = max(max_orders[row[0]], max([order[0] for order in row[1]]))
+                                            for cf in cost_functions:
+                                                # diagnose
+                                                results_dgm = \
+                                                    diagnoser2.diagnose(bs, plan, annotated_observation, cf, fd,
+                                                                        diagnosis_generation_methods, failure_wall_clock_time)
+                                                # save the results datastructure for this dgm in the results list
+                                                results.append([
+                                                    str(bs),
+                                                    pl,
+                                                    an,
+                                                    '\r\n'.join(list(map(lambda pln: str(pln), plan))),
+                                                    fan,
+                                                    str(F),
+                                                    fp,
+                                                    fsr,
+                                                    ft,
+                                                    fd,
+                                                    rn + 1,
+                                                    instance_number,
+                                                    cf,
+                                                    results_dgm])
 
-                                        # advance instance number by 1
-                                        instance_number += 1
+                                                # update the maximum number of the orders
+                                                for row in results_dgm:
+                                                    if row[0] != 'gold':
+                                                        max_orders[row[0]] = max(max_orders[row[0]], max([order[0] for order in row[1]]))
+
+                                            # advance instance number by 1
+                                            instance_number += 1
 
     # fill in last results for intances that finished before
     for result in results:
@@ -196,13 +204,15 @@ def runExperimentBundle(filename):
                     result[12],
                     dgm[0],
                     order[0],
-                    '\r\n'.join(list(map(lambda rs: str(rs), order[7]))),
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[9]))),
                     order[1],
                     order[2],
                     order[3],
                     order[4],
                     order[5],
-                    order[6]
+                    order[6],
+                    order[7],
+                    order[8]
                 ]
                 excel_results.append(ex_res)
 
@@ -227,6 +237,8 @@ def runExperimentBundle(filename):
         {'header': 'distance'},
         {'header': 'batch # diagnoses'},
         {'header': 'cumulated # diagnoses'},
+        {'header': 'batch # f calls'},
+        {'header': 'cumulated # f calls'},
         {'header': 'batch runtime'},
         {'header': 'cumulated runtime'}
     ]

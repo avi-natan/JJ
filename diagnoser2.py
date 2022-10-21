@@ -47,6 +47,7 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, s
     Phi = []
     n = len(W)
 
+    num_cost_f_calls = 0
     temp_w = 0
     for w in W:
         W_minus_w = [item for item in W if item != w]
@@ -71,6 +72,7 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, s
                 seen.append(W_minus_S)
                 seen_cf[str(W_minus_S)] = cf_S
             f_cf_S = cost_function(cf_S)
+            num_cost_f_calls += 1
 
             # create the set Suw
             Suw = S + [w]
@@ -87,6 +89,7 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, s
                 seen.append(W_minus_Suw)
                 seen_cf[str(W_minus_Suw)] = cf_Suw
             f_cf_Suw = cost_function(cf_Suw)
+            num_cost_f_calls += 1
 
             # calculate the sum for S and add it to the total sum
             sum_S = math.factorial(len_S) * math.factorial(n-len_S-1) * (f_cf_Suw - f_cf_S)
@@ -94,7 +97,7 @@ def shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, s
         Phi_w = total_sum / math.factorial(n)
         Phi.append([w, Phi_w])
         temp_w += 1
-    return Phi
+    return Phi, num_cost_f_calls
 
 def extract_certain_faults(plan, observation):
     fault_list = []
@@ -163,7 +166,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
 
     # time logging
     start_time = time.time()
-    shapley_gold = shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, seen_cf)
+    shapley_gold, num_cost_f_calls = shapley(board_size, plan, failure_wall_clock_time, W, cost_function, seen, seen_cf)
     # time logging
     end_time = time.time()
     runtime = end_time - start_time
@@ -177,7 +180,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
 
     print(f'shapley gold runtime: {runtime}')
 
-    return shapley_gold_normalized, runtime
+    return shapley_gold_normalized, runtime, num_cost_f_calls
 
 
 def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, diagnosis_generator):
@@ -186,7 +189,8 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
 
     # sort the subsets according to the diagnosis generator
     sorting_start = time.time()
-    sorted_subsets_W = diagnosis_generator(subsets_W, failure_wall_clock_time)
+    # todo: the last part of the below ine (i.e., [:5]) is there to skip calculating using later batches than 1-5
+    sorted_subsets_W = diagnosis_generator(subsets_W, failure_wall_clock_time)[:5]
     sorting_end = time.time()
     delta_sorting = sorting_end - sorting_start
 
@@ -200,7 +204,8 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
     for batch in sorted_subsets_W:
         # initialize a diagnosis batch. set the order number (cardinality, time step, etc) and the runtime of the
         # diagnoses ordering (its an overhead)
-        diagnosis_batch = [batch[0], 0, delta_sorting, []]
+        # [batch number, number of diagnoses, number of function calls, runtime, diagnoses list]
+        diagnosis_batch = [batch[0], 0, 0, delta_sorting, []]
         # for each subset in the current subset batch do:
         for S in batch[1]:
             # calculate the minus set
@@ -221,10 +226,11 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
                 diagnosis_batch[1] += 1
                 # calculate shapley values for S
                 S_start = time.time()
-                shapley_S = shapley(board_size, plan, failure_wall_clock_time, S, cost_function, seen, seen_cf)
+                shapley_S, num_cost_f_calls = shapley(board_size, plan, failure_wall_clock_time, S, cost_function, seen, seen_cf)
                 S_end = time.time()
                 delta_S = S_end - S_start
-                diagnosis_batch[2] = diagnosis_batch[2] + delta_S
+                diagnosis_batch[2] = diagnosis_batch[2] + num_cost_f_calls
+                diagnosis_batch[3] = diagnosis_batch[3] + delta_S
                 # normalize the shpley values for S
                 values_list = list(map(lambda item: item[1], shapley_S))
                 normalized_values = helper.normalize_values_list(values_list)
@@ -232,17 +238,17 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
                 for i, ssn in enumerate(shapley_S_normalized):
                     ssn[1] = normalized_values[i]
                 # inset S into the diagnosis batch together with its shapley value
-                diagnosis_batch[3].append([S, shapley_S_normalized])
+                diagnosis_batch[4].append([S, shapley_S_normalized])
         # calculate the aggregated shapley value until this point
         aggregated = [[fe, 0.0] for fe in W]
         for agg in aggregated:
             fe = agg[0]
             for sd in sorted_diagnoses:
-                for dg in sd[6]:
+                for dg in sd[8]:
                     if fe in dg[0]:
                         sh_d_fe = list(filter(lambda f: f[0] == fe, dg[1]))[0][1]
                         agg[1] = agg[1] + sh_d_fe
-            for dg in diagnosis_batch[3]:
+            for dg in diagnosis_batch[4]:
                 if fe in dg[0]:
                     sh_d_fe = list(filter(lambda f: f[0] == fe, dg[1]))[0][1]
                     agg[1] = agg[1] + sh_d_fe
@@ -255,10 +261,10 @@ def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_dete
         # finally insert the current diagnosis batch into the diagnoses datastructure
         if len(sorted_diagnoses) > 0:
             sorted_diagnoses.append(
-                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[1] + sorted_diagnoses[-1][2], diagnosis_batch[2], diagnosis_batch[2] + sorted_diagnoses[-1][4], aggregated_normalized, diagnosis_batch[3]])
+                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[1] + sorted_diagnoses[-1][2], diagnosis_batch[2], diagnosis_batch[2] + sorted_diagnoses[-1][4],     diagnosis_batch[3], diagnosis_batch[3] + sorted_diagnoses[-1][6], aggregated_normalized, diagnosis_batch[4]])
         else:
             sorted_diagnoses.append(
-                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[1], diagnosis_batch[2], diagnosis_batch[2], aggregated_normalized, diagnosis_batch[3]])
+                [diagnosis_batch[0], diagnosis_batch[1], diagnosis_batch[1], diagnosis_batch[2], diagnosis_batch[2],     diagnosis_batch[3], diagnosis_batch[3], aggregated_normalized, diagnosis_batch[4]])
     return sorted_diagnoses
 
 def diagnose(board_size, plan, observation, cost_function, failure_detector, diagnosis_generation_methods, failure_wall_clock_time):
@@ -283,7 +289,7 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     print(len(W))
 
     # calculate gold standard shapley values for the faulty events w in W
-    shapley_gold, runtime_gold = calculate_shapley_gold_standard(board_size, plan, W, cost_func, failure_wall_clock_time)
+    shapley_gold, runtime_gold, num_cost_f_calls = calculate_shapley_gold_standard(board_size, plan, W, cost_func, failure_wall_clock_time)
 
     # for each of the diagnosis generation methods, input the same input as the
     # gold standard and then calculate an additive shapley values - i.e., for every
@@ -301,12 +307,12 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     shg_values = [item[1] for item in shapley_gold]
     for rd in results_dgm:
         for batch in rd[1]:
-            brd_values = [item[1] for item in batch[5]]
+            brd_values = [item[1] for item in batch[7]]
             distance = helper.euclidean_distance(brd_values, shg_values)
             batch.insert(1, distance)
             batch.insert(1, len(W))
             # batch.insert(2, -1)
     # finalize the dgm resuts and prepare them for output of this function
-    # [name, [[batch number, # faulty events, distance, batch # diagnoses, comulated # diagnoses, batch runtime, commulated runtime, shapley value]]]
-    results_dgm.insert(0, ['gold', [[0, len(W), 0, 0, 0, runtime_gold, runtime_gold, shapley_gold]]])
+    # [name, [[batch number, # faulty events, distance, batch # diagnoses, comulated # diagnoses, batch # cost f calls, comulated # cost f calls, batch runtime, commulated runtime, shapley value]]]
+    results_dgm.insert(0, ['gold', [[0, len(W), 0, 0, 0, num_cost_f_calls, num_cost_f_calls, runtime_gold, runtime_gold, shapley_gold]]])
     return results_dgm
