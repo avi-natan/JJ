@@ -183,14 +183,14 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
     return shapley_gold_normalized, runtime, num_cost_f_calls
 
 
-def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, diagnosis_generator):
+def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, diagnosis_generator, max_x, min_x):
     # generate the subsets of W
     subsets_W = helper.subsets(W)[1:]
 
     # sort the subsets according to the diagnosis generator
     sorting_start = time.time()
     # todo: the last part of the below ine (i.e., [:5]) is there to skip calculating using later batches than 1-5
-    sorted_subsets_W = diagnosis_generator(subsets_W, failure_wall_clock_time)[:5]
+    sorted_subsets_W = diagnosis_generator(subsets_W, failure_wall_clock_time, len(plan[0]), max_x, min_x)[:5]
     sorting_end = time.time()
     delta_sorting = sorting_end - sorting_start
 
@@ -291,6 +291,8 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     # calculate gold standard shapley values for the faulty events w in W
     shapley_gold, runtime_gold, num_cost_f_calls = calculate_shapley_gold_standard(board_size, plan, W, cost_func, failure_wall_clock_time)
 
+    only_vals = [item[1] for item in shapley_gold]
+
     # for each of the diagnosis generation methods, input the same input as the
     # gold standard and then calculate an additive shapley values - i.e., for every
     # set of diagnoses (cardinality, tempral, etc) calculate the shapley value until then
@@ -298,7 +300,7 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     for dgm in diagnosis_generation_methods:
         # make a diagnosis generator
         diagnosis_generator = diagnosis_generators.make_diagnosis_generator(dgm)
-        result_dgm = calculate_shapley_using_dgm(board_size, plan, W, cost_func, detector, failure_wall_clock_time, diagnosis_generator)
+        result_dgm = calculate_shapley_using_dgm(board_size, plan, W, cost_func, detector, failure_wall_clock_time, diagnosis_generator, max(only_vals), min(only_vals))
         results_dgm.append([dgm, result_dgm])
 
     # for each of the dgm results (foreach method there are the batch results) calcualte

@@ -1,4 +1,27 @@
-def dgm_cardi_asc(subsets, failure_wall_clock_time):
+from numpy.random import choice
+import math
+import scipy.stats as sct
+
+def dgm_sampl_rnd(subsets, failure_wall_clock_time, plan_length, max_x, min_x):
+    sorted_batches = []
+    subsets_inds = [i for i, _ in enumerate(subsets)]
+    # m = int(len(subsets) / 4)
+    # m = int(math.log10(len(subsets)))
+    alpha = 0.01
+    Z_alpha_div_2 = sct.norm.isf(q=alpha/2,loc=0,scale=1)
+    # sigma_sq = ((failure_wall_clock_time-1) - (-plan_length))**2 / 4.0
+    sigma_sq = (max_x - min_x) ** 2 / 4.0
+    e_th = 0.045
+    m = int(Z_alpha_div_2**2 * sigma_sq / e_th**2)
+    samples = []
+    for i in range(m):
+        sample_ind = choice(subsets_inds, 1)[0]
+        samples.append(subsets[sample_ind])
+    batch = [0, samples]
+    sorted_batches.append(batch)
+    return sorted_batches
+
+def dgm_cardi_asc(subsets, failure_wall_clock_time, plan_length, max_x, min_x):
     # no sorting here
 
     # divide to batches
@@ -11,7 +34,7 @@ def dgm_cardi_asc(subsets, failure_wall_clock_time):
         sorted_batches.append(batch_c)
     return sorted_batches
 
-def dgm_tempo_dsc(subsets, failure_wall_clock_time):
+def dgm_tempo_dsc(subsets, failure_wall_clock_time, plan_length, max_x, min_x):
     sorted_batches = []
     min_t = 1
     max_t = failure_wall_clock_time
@@ -27,7 +50,7 @@ def dgm_tempo_dsc(subsets, failure_wall_clock_time):
         sorted_batches.append(batch_t)
     return sorted_batches
 
-def dgm_tempo_asc(subsets, failure_wall_clock_time):
+def dgm_tempo_asc(subsets, failure_wall_clock_time, plan_length, max_x, min_x):
     sorted_batches = []
     min_t = 1
     max_t = failure_wall_clock_time
@@ -43,7 +66,7 @@ def dgm_tempo_asc(subsets, failure_wall_clock_time):
         sorted_batches.append(batch_t)
     return sorted_batches
 
-def dgm_delay_dsc(subsets, failure_wall_clock_time):
+def dgm_delay_dsc(subsets, failure_wall_clock_time, plan_length, max_x, min_x):
     # for each subset, calculate its delay sum
     delays = [sum([fe[2] for fe in subset]) for subset in subsets]
 
@@ -70,6 +93,9 @@ def make_diagnosis_generator(diagnosis_generator_method):
     elif diagnosis_generator_method == 'dgm_delay_dsc':
         # print('dgm_delay_dsc')
         return dgm_delay_dsc
+    elif diagnosis_generator_method == 'dgm_sampl_rnd':
+        # print('dgm_sampl_rnd')
+        return dgm_sampl_rnd
     else:       # raise error
         print('error: unexected diagnosis generator method')
         raise Exception("unexected diagnosis generator method")
