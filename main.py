@@ -122,7 +122,7 @@ def runExperimentBundle(filename):
                                             print(
                                                 f'######################## simulating instance {instance_number}/{total_instances} ########################')
                                             print(
-                                                f'pl:{pl}, an: {an}, fan: {fan}, fp:{fp}')
+                                                f'pl:{pl}, an: {an}, fan: {fan}, fp:{fp}, fd:{fd}, fen:{fen}, rn:{rn}')
                                             annotated_observation, spdchgtab, simulation_remake = \
                                                 simulator2.simulate_instance(bs, plan, F, fp, fsr, ft, fd, rn + 1,
                                                                              instance_number, total_instances)
