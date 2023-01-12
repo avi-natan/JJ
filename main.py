@@ -191,30 +191,31 @@ def runExperimentBundle(filename):
         for dgm in result[13]:
             for order in dgm[1]:
                 ex_res = [
-                    result[0],
-                    result[1],
-                    result[2],
-                    result[3],
-                    result[4],
-                    result[5],
-                    result[6],
-                    result[7],
-                    result[8],
-                    result[9],
-                    result[10],
-                    result[11],
-                    result[12],
-                    dgm[0],
-                    order[0],
-                    '\r\n'.join(list(map(lambda rs: str(rs), order[9]))),
-                    order[1],
-                    order[2],
-                    order[3],
-                    order[4],
-                    order[5],
-                    order[6],
-                    order[7],
-                    order[8]
+                    result[0],                                              # board_size
+                    result[1],                                              # plan_length
+                    result[2],                                              # agent_number
+                    result[3],                                              # plan
+                    result[4],                                              # faulty_agents_number
+                    result[5],                                              # faulty_agents_set
+                    result[6],                                              # fault_probability
+                    result[7],                                              # fault_speed_range
+                    result[8],                                              # fault_type
+                    result[9],                                              # failure_detector
+                    result[10],                                             # repeat_number
+                    result[11],                                             # instance_number
+                    result[12],                                             # cost_function
+                    dgm[0],                                                 # dgm
+                    order[0],                                               # batch
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[9]))),   # shapley_value
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[9]))),  # shapley_value_normalized todo 420
+                    order[1],                                               # number of faulty events
+                    order[2],                                               # distance
+                    order[3],                                               # batch # diagnoses
+                    order[4],                                               # cumulated # diagnoses
+                    order[5],                                               # batch # f calls
+                    order[6],                                               # cumulated # f calls
+                    order[7],                                               # batch runtime
+                    order[8]                                                # cumulated runtime
                 ]
                 excel_results.append(ex_res)
 
@@ -235,6 +236,7 @@ def runExperimentBundle(filename):
         {'header': 'dgm'},
         {'header': 'batch'},
         {'header': 'shapley_value'},
+        {'header': 'shapley_value_normalized'},
         {'header': 'faulty events #'},
         {'header': 'distance'},
         {'header': 'batch # diagnoses'},
