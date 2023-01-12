@@ -180,8 +180,7 @@ def calculate_shapley_gold_standard(board_size, plan, W, cost_function, failure_
 
     print(f'shapley gold runtime: {runtime}')
 
-    # todo 420 add the shapley_gold to the return statement
-    return shapley_gold_normalized, runtime, num_cost_f_calls
+    return shapley_gold, shapley_gold_normalized, runtime, num_cost_f_calls
 
 
 def calculate_shapley_using_dgm(board_size, plan, W, cost_function, failure_detector, failure_wall_clock_time, diagnosis_generator, max_x, min_x):
@@ -308,8 +307,7 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
     print(len(W))
 
     # calculate gold standard shapley values for the faulty events w in W
-    # todo 420 add shapley_gold to the return statement
-    shapley_gold_normalized, runtime_gold, num_cost_f_calls = calculate_shapley_gold_standard(board_size, plan, W, cost_func, failure_wall_clock_time)
+    shapley_gold, shapley_gold_normalized, runtime_gold, num_cost_f_calls = calculate_shapley_gold_standard(board_size, plan, W, cost_func, failure_wall_clock_time)
 
     only_vals = [item[1] for item in shapley_gold_normalized]
 
@@ -336,6 +334,5 @@ def diagnose(board_size, plan, observation, cost_function, failure_detector, dia
             # batch.insert(2, -1)
     # finalize the dgm resuts and prepare them for output of this function
     # [name, [[batch number, # faulty events, distance, batch # diagnoses, comulated # diagnoses, batch # cost f calls, comulated # cost f calls, batch runtime, commulated runtime, shapley value]]]
-    # todo 420 add shapley_gold to the return statement
-    results_dgm.insert(0, ['gold', [[0, len(W), 0, 0, 0, num_cost_f_calls, num_cost_f_calls, runtime_gold, runtime_gold, shapley_gold_normalized]]])
+    results_dgm.insert(0, ['gold', [[0, len(W), 0, 0, 0, num_cost_f_calls, num_cost_f_calls, runtime_gold, runtime_gold, shapley_gold, shapley_gold_normalized]]])
     return results_dgm

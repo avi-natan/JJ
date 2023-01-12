@@ -207,7 +207,7 @@ def runExperimentBundle(filename):
                     dgm[0],                                                 # dgm
                     order[0],                                               # batch
                     '\r\n'.join(list(map(lambda rs: str(rs), order[9]))),   # shapley_value
-                    '\r\n'.join(list(map(lambda rs: str(rs), order[9]))),  # shapley_value_normalized todo 420
+                    '\r\n'.join(list(map(lambda rs: str(rs), order[10]))),  # shapley_value_normalized
                     order[1],                                               # number of faulty events
                     order[2],                                               # distance
                     order[3],                                               # batch # diagnoses
